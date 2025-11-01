@@ -479,3 +479,4 @@ This is part of the Rōnin's Pact project. See main repository README for contri
 ## License
 
 See main repository for license information.
+

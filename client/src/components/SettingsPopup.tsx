@@ -111,7 +111,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
               }}
               className={`w-full py-3 px-4 text-sm c64-button ${
                 musicEnabled
-                  ? 'bg-[#00CC55] border-[#00B428]'
+                  ? 'bg-[#00CC55] border-[#00B428] opacity-60'
                   : 'bg-[#777777] border-[#333333]'
               }`}
             >
@@ -132,7 +132,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
               }}
               className={`w-full py-3 px-4 text-sm c64-button ${
                 soundEffectsEnabled
-                  ? 'bg-[#00CC55] border-[#00B428]'
+                  ? 'bg-[#00CC55] border-[#00B428] opacity-60'
                   : 'bg-[#777777] border-[#333333]'
               }`}
             >
@@ -152,7 +152,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
               }}
               className={`w-full py-3 px-4 text-sm c64-button ${
                 colorblindMode
-                  ? 'bg-[#00CC55] border-[#00B428]'
+                  ? 'bg-[#00CC55] border-[#00B428] opacity-60'
                   : 'bg-[#777777] border-[#333333]'
               }`}
             >
@@ -175,7 +175,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
                   }}
                   className={`py-3 px-2 text-xs c64-button ${
                     language === lang
-                      ? 'bg-[#EEEE77] border-[#FFD800]'
+                      ? 'bg-[#EEEE77] border-[#FFD800] opacity-60'
                       : 'bg-[#A4A0E4] border-[#6C5EB5]'
                   }`}
                 >
@@ -186,15 +186,6 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <pre className="text-[#777777] text-[10px]">
-{`SETTINGS SAVED
-PRESS ANY KEY TO CONTINUE`}
-          </pre>
-          <div className="text-[#AAFFEE] text-sm c64-blink mt-2">█</div>
         </div>
 
         {/* Rainbow stripe */}

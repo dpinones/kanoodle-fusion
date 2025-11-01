@@ -72,7 +72,7 @@ export function ConnectWallet() {
     return (
       <button
         onClick={handleConnect}
-        className="c64-button py-2 px-4 text-xs bg-[#00CC55] border-[#00B428]"
+        className="c64-button py-1 px-2 sm:py-2 sm:px-4 text-[10px] sm:text-xs bg-[#00CC55] border-[#00B428]"
       >
         CONNECT
       </button>
@@ -84,11 +84,12 @@ export function ConnectWallet() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="c64-button py-2 px-4 text-xs flex items-center gap-2 bg-[#0088FF] border-[#006CD8]"
+        className="c64-button py-1 px-2 sm:py-2 sm:px-3 text-[9px] sm:text-xs flex items-center gap-1 sm:gap-2 bg-[#0088FF] border-[#006CD8]"
       >
-        <div className="w-2 h-2 bg-[#00CC55] rounded-full animate-pulse" />
-        <span>{formatAddress(address)}</span>
-        <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#00CC55] rounded-full animate-pulse" />
+        <span className="hidden sm:inline">{formatAddress(address)}</span>
+        <span className="sm:hidden">{address.slice(0, 4)}...{address.slice(-2)}</span>
+        <span className={`transition-transform text-[8px] sm:text-xs ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
       </button>
 
       {/* Dropdown Menu - C64 Style */}

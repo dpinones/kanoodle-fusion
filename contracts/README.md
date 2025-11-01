@@ -40,3 +40,10 @@ para representar las coordenadas tambien
 
 
 los niveles son 50 que los quiero guardar en constantes. para saber si completo el nivel habria que comparar si la matriz de colores que esta armando es igual a la solucion de ese nivel.
+
+
+sozo -P slot execute  kanoodle_fusion_system start_game 0x00dba4d5ba495338b74aceac92ddc26afff9319d675e09db0aadba40cc606245 1
+sozo -P slot execute kanoodle_fusion_system place_piece 61 0x00dba4d5ba495338b74aceac92ddc26afff9319d675e09db0aadba40cc606245 1 3 0 0 0
+
+
+sozo -P slot call kanoodle_fusion_system get_level 1

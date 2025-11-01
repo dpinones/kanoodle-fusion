@@ -134,7 +134,7 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
       setError(null);
 
       try {
-        console.log('Starting game with level:', levelId);
+        console.log('Starting game with LEVEL:', levelId);
 
         // Call the start_game function via account.execute
         const tx = await account.execute({
@@ -146,7 +146,9 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
         console.log('Transaction sent:', tx.transaction_hash);
 
         // Wait for transaction to be confirmed
-        await account.waitForTransaction(tx.transaction_hash);
+        await account.waitForTransaction(tx.transaction_hash, {
+          retryInterval: 100,
+        });
 
         console.log('Transaction confirmed:', tx.transaction_hash);
 
@@ -251,7 +253,9 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
         console.log('Transaction sent:', tx.transaction_hash);
 
         // Wait for transaction confirmation
-        await account.waitForTransaction(tx.transaction_hash);
+        await account.waitForTransaction(tx.transaction_hash, {
+          retryInterval: 100,
+        });
 
         console.log('Piece placed successfully');
 

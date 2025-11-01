@@ -47,7 +47,7 @@ export const ColorHex: Record<ColorValue, string> = {
   [Colors.BLUE]: '#0088FF',        // Light Blue (C64)
   [Colors.GREEN]: '#00CC55',       // Green (C64)
   [Colors.ORANGE]: '#DD8855',      // Orange (C64)
-  [Colors.PURPLE]: '#CC44CC',      // Purple (C64)
+  [Colors.PURPLE]: '#8c28d8',      // Purple (C64)
   [Colors.NEUTRAL]: '#BBBBBB',     // Light Grey (C64)
 };
 
@@ -58,7 +58,7 @@ export interface PieceCell {
   color: ColorValue;
 }
 
-// Game piece definition (from Dojo get_piece_definition)
+// Game piece definition (matches Dojo contract structure)
 export interface GamePiece {
   piece_id: number;
   size: number; // Number of cells (1-4)

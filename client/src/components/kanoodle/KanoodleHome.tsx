@@ -52,15 +52,15 @@ export function KanoodleHome() {
   };
 
   return (
-    <div className="h-screen bg-[#6C5EB5] c64-screen relative overflow-hidden flex flex-col">
+    <div className="h-screen w-screen bg-[#6C5EB5] c64-screen relative overflow-hidden flex flex-col">
       {/* C64 Border */}
-      <div className="absolute inset-0 border-[32px] border-[#A4A0E4] pointer-events-none"></div>
+      <div className="absolute inset-0 border-[16px] sm:border-[32px] border-[#A4A0E4] pointer-events-none"></div>
 
       {/* Rainbow stripe - top */}
-      <div className="absolute top-8 left-0 right-0 c64-rainbow z-10"></div>
+      <div className="absolute top-4 sm:top-8 left-0 right-0 c64-rainbow z-10"></div>
 
       {/* Top right buttons */}
-      <div className="absolute top-12 right-12 z-20 flex gap-3">
+      <div className="absolute top-6 sm:top-12 right-6 sm:right-12 z-20 flex gap-2 sm:gap-3">
         <ConnectWallet />
         <button
           onClick={() => {
@@ -74,15 +74,15 @@ export function KanoodleHome() {
       </div>
 
       {/* Main content - Optimized to fit screen */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 py-8">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 py-4 sm:py-6">
         {/* READY prompt */}
         <div className="mb-2">
           <pre className="text-[#AAFFEE] c64-text-glow text-xs">READY.</pre>
         </div>
 
         {/* Game Title - C64 ASCII art style - Smaller */}
-        <div className="text-center mb-4">
-          <pre className="text-[#AAFFEE] c64-text-glow text-xl md:text-2xl font-bold leading-tight mb-2">
+        <div className="text-center mb-3 sm:mb-4">
+          <pre className="text-[#AAFFEE] c64-text-glow text-base sm:text-xl md:text-2xl font-bold leading-tight mb-2">
 {`╔═══════════════════╗
 ║  K A N O O D L E  ║
 ║   F U S I O N     ║
@@ -94,55 +94,49 @@ export function KanoodleHome() {
         </div>
 
         {/* Menu Options - Compact */}
-        <div className="w-full max-w-md space-y-3">
+        <div className="w-full max-w-md space-y-2 sm:space-y-3">
           {/* Play button */}
-          <div className="c64-border bg-[#6C5EB5]/90 p-3">
+          <div className="c64-border bg-[#6C5EB5]/90 p-2 sm:p-3">
             <button
               onClick={handleStartGame}
               disabled={isCreatingGame || !address}
-              className="c64-button w-full py-3 px-6 text-base bg-[#00CC55] border-[#00B428] disabled:bg-[#777777] disabled:border-[#333333]"
+              className="c64-button w-full py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base bg-[#00CC55] border-[#00B428] disabled:bg-[#777777] disabled:border-[#333333]"
             >
               {isCreatingGame ? '⏳ CREATING GAME...' : `▶ ${text.playButton}`}
             </button>
           </div>
 
           {/* Tutorial button */}
-          <div className="c64-border bg-[#6C5EB5]/90 p-3">
+          <div className="c64-border bg-[#6C5EB5]/90 p-2 sm:p-3">
             <button
               onClick={() => {
                 audioManager.playMenuNav();
                 navigate('/tutorial');
               }}
-              className="c64-button w-full py-3 px-6 text-base bg-[#0088FF] border-[#006CD8]"
+              className="c64-button w-full py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base bg-[#0088FF] border-[#006CD8]"
             >
               ? {text.tutorialButton}
             </button>
           </div>
 
           {/* Share button */}
-          <div className="c64-border bg-[#6C5EB5]/90 p-3">
+          <div className="c64-border bg-[#6C5EB5]/90 p-2 sm:p-3">
             <button
               onClick={() => {
                 audioManager.playButtonClick();
-                const tweetText = encodeURIComponent('🧩 Playing KANOODLE FUSION on C64! Built on Starknet with Dojo #FOCG #Starknet @ohayo_dojo');
+                const tweetText = encodeURIComponent('🧩 Playing KANOODLE FUSION on C64! #PuzzleGame #RetroGaming');
                 window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
               }}
-              className="c64-button w-full py-3 px-6 text-base bg-[#CC44CC] border-[#8C28D8]"
+              className="c64-button w-full py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base bg-[#CC44CC] border-[#8C28D8]"
             >
               𝕏 {text.shareButton}
             </button>
           </div>
         </div>
-
-        {/* Credits */}
-        <div className="mt-6 text-center text-[#777777] text-[10px]">
-          <p>POWERED BY CARTRIDGE</p>
-          <p className="mt-1">DOJO ENGINE</p>
-        </div>
       </div>
 
       {/* Rainbow stripe - bottom */}
-      <div className="absolute bottom-8 left-0 right-0 c64-rainbow z-10"></div>
+      <div className="absolute bottom-4 sm:bottom-8 left-0 right-0 c64-rainbow z-10"></div>
 
       {/* Settings Popup */}
       {showSettings && <SettingsPopup onClose={() => setShowSettings(false)} />}

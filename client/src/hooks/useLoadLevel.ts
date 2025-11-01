@@ -17,10 +17,9 @@ interface UseLoadLevelReturn {
 }
 
 export function useLoadLevel(): UseLoadLevelReturn {
-  // @ts-expect-error - ABI type mismatch with starknet.js, will be fixed later
   const { contract } = useContract({
-    address: KANOODLE_SYSTEM_ADDRESS,
-    abi: KANOODLE_SYSTEM_ABI,
+    address: KANOODLE_SYSTEM_ADDRESS as `0x${string}`,
+    abi: KANOODLE_SYSTEM_ABI as any,
   });
 
   const [currentLevel, setCurrentLevel] = useState<Level | null>(null);
@@ -41,14 +40,13 @@ export function useLoadLevel(): UseLoadLevelReturn {
         console.log('Loading level:', levelId);
 
         // Call get_level view function
-        // @ts-expect-error - Contract call type mismatch
-        const levelData = await contract.call('get_level', [levelId]);
+        const levelData = await contract.call('get_level', [levelId]) as any;
 
         // Parse level data
         const level: Level = {
-          level_id: levelData.level_id || levelId,
-          solution: levelData.solution || [],
-          allowed_pieces: levelData.allowed_pieces || [],
+          level_id: Number(levelData?.level_id || levelId),
+          solution: levelData?.solution || [],
+          allowed_pieces: levelData?.allowed_pieces || [],
         };
 
         setCurrentLevel(level);

@@ -111,10 +111,9 @@ interface UseKanoodleGameReturn {
 
 export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
   const { address, account } = useAccount();
-  // @ts-expect-error - ABI type mismatch with starknet.js, will be fixed later
   const { contract } = useContract({
-    address: KANOODLE_SYSTEM_ADDRESS,
-    abi: KANOODLE_ABI,
+    address: KANOODLE_SYSTEM_ADDRESS as `0x${string}`,
+    abi: KANOODLE_ABI as any,
   });
 
   const [gameState, setGameState] = useState<KanoodleGame | null>(null);

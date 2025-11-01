@@ -18,10 +18,9 @@ interface UseGameStateReturn {
 
 export function useGameState(gameId?: number): UseGameStateReturn {
   const { address } = useAccount();
-  // @ts-expect-error - ABI type mismatch with starknet.js, will be fixed later
   const { contract } = useContract({
-    address: KANOODLE_SYSTEM_ADDRESS,
-    abi: KANOODLE_SYSTEM_ABI,
+    address: KANOODLE_SYSTEM_ADDRESS as `0x${string}`,
+    abi: KANOODLE_SYSTEM_ABI as any,
   });
 
   const [gameState, setGameState] = useState<KanoodleGame | null>(null);
@@ -40,20 +39,19 @@ export function useGameState(gameId?: number): UseGameStateReturn {
       console.log('Fetching game state for game:', gameId);
 
       // Call get_game_state view function
-      // @ts-expect-error - Contract call type mismatch
-      const state = await contract.call('get_game_state', [gameId, address]);
+      const state = await contract.call('get_game_state', [gameId, address]) as any;
 
       // Parse game state
       const parsedState: KanoodleGame = {
-        game_id: state.game_id || gameId,
-        player: state.player || address,
-        level_id: state.level_id || 0,
-        current_solution: state.current_solution || [],
-        placed_piece_ids: state.placed_piece_ids || [],
-        pieces_count: state.pieces_count || 0,
-        is_solved: state.is_solved || false,
-        moves_count: state.moves_count || 0,
-        timestamp: state.timestamp || 0,
+        game_id: Number(state?.game_id || gameId),
+        player: state?.player || address || '',
+        level_id: Number(state?.level_id || 0),
+        current_solution: state?.current_solution || [],
+        placed_piece_ids: state?.placed_piece_ids || [],
+        pieces_count: Number(state?.pieces_count || 0),
+        is_solved: state?.is_solved || false,
+        moves_count: Number(state?.moves_count || 0),
+        timestamp: Number(state?.timestamp || 0),
       };
 
       setGameState(parsedState);

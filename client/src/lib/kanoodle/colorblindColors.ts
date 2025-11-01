@@ -8,7 +8,7 @@ import { Colors, type ColorValue } from './types';
 
 // Colorblind-friendly palette using high contrast and distinguishable hues
 // Based on research for deuteranopia, protanopia, and tritanopia
-export const ColorblindHex: Record<ColorValue, string> = {
+export const ColorblindHex: Record<number, string> = {
   [Colors.EMPTY]: '#000000',           // Black
   [Colors.RED]: '#E63946',             // Bright red (distinguishable)
   [Colors.YELLOW]: '#FFD60A',          // Bright yellow
@@ -18,7 +18,6 @@ export const ColorblindHex: Record<ColorValue, string> = {
   [Colors.PURPLE]: '#8338EC',          // Violet (distinguishable)
   [Colors.NEUTRAL]: '#ADB5BD',         // Light gray
   // Mixed colors
-  // @ts-ignore - Mixed color values not in type
   9: '#F77F00',  // Orange (RED + YELLOW)
   10: '#8338EC', // Purple (RED + BLUE)
   11: '#06D6A0', // Green (YELLOW + BLUE)
@@ -29,8 +28,7 @@ export const ColorblindHex: Record<ColorValue, string> = {
 };
 
 // Symbols/patterns for each color to provide additional visual differentiation
-// @ts-expect-error - Mixed color values (9-15) not in ColorValue type
-export const ColorSymbol: Record<ColorValue, string> = {
+export const ColorSymbol: Record<number, string> = {
   [Colors.EMPTY]: '',
   [Colors.RED]: '●',      // Circle
   [Colors.YELLOW]: '■',   // Square
@@ -50,8 +48,7 @@ export const ColorSymbol: Record<ColorValue, string> = {
 };
 
 // Pattern descriptions for accessibility
-// @ts-expect-error - Mixed color values (9-15) not in ColorValue type
-export const ColorPattern: Record<ColorValue, string> = {
+export const ColorPattern: Record<number, string> = {
   [Colors.EMPTY]: 'empty',
   [Colors.RED]: 'dots',
   [Colors.YELLOW]: 'horizontal-lines',

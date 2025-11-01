@@ -148,7 +148,7 @@ export function KanoodleGameScreen() {
     e.dataTransfer.setData('text/plain', 'dragging');
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
+  const handleDragEnd = () => {
     // Cleanup if needed
   };
 

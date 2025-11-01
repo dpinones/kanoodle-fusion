@@ -20,5 +20,9 @@ export default defineConfig({
   },
   server: {
     host: true,
+    fs: {
+      // Allow serving files from the contracts directory
+      allow: ['..'],
+    },
   },
 })

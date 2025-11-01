@@ -1,205 +1,4 @@
 import { AccountInterface, Call } from 'starknet';
-import { TrialStatus } from './types';
-
-/**
- * Splits a token ID string into u256 components (low, high).
- *
- * In Starknet, u256 values are represented as two 128-bit components:
- * - low: the lower 128 bits
- * - high: the upper 128 bits
- *
- * @param tokenId - The token ID as a string or number
- * @returns An object containing the low and high components as strings
- *
- * @example
- * ```typescript
- * const { low, high } = splitTokenIdToU256("123456789");
- * // Returns: { low: "123456789", high: "0" }
- * ```
- */
-export function splitTokenIdToU256(tokenId: string | number): { low: string; high: string } {
-  const tokenIdBigInt = BigInt(tokenId);
-  const low = tokenIdBigInt & ((1n << 128n) - 1n);
-  const high = tokenIdBigInt >> 128n;
-
-  return {
-    low: low.toString(),
-    high: high.toString(),
-  };
-}
-
-interface FormatDurationOptions {
-  /**
-   * Whether to show seconds in the output.
-   * @default false
-   */
-  showSeconds?: boolean;
-
-  /**
-   * Whether to use verbose output with full time unit names and pluralization.
-   * When false, uses short format (e.g., "1h 30m").
-   * When true, uses long format (e.g., "1 hour", "30 minutes").
-   * @default false
-   */
-  verbose?: boolean;
-}
-
-/**
- * Formats a duration in seconds into a human-readable string.
- *
- * Supports two formatting modes:
- * - Short format (default): "1h 30m", "45m", "30s"
- * - Verbose format: "1 hour", "30 minutes", "45 seconds" (with proper pluralization)
- *
- * @param seconds - The duration in seconds
- * @param options - Formatting options
- * @returns A formatted duration string
- *
- * @example
- * ```typescript
- * formatDuration(3665); // "1h 1m"
- * formatDuration(3665, { showSeconds: true }); // "1h 1m 5s"
- * formatDuration(3600, { verbose: true }); // "1 hour"
- * formatDuration(7200, { verbose: true }); // "2 hours"
- * formatDuration(90, { verbose: true }); // "1 minute"
- * formatDuration(45); // "45s"
- * formatDuration(45, { verbose: true }); // "45 seconds"
- * ```
- */
-export function formatDuration(seconds: number, options: FormatDurationOptions = {}): string {
-  const { showSeconds = false, verbose = false } = options;
-
-  // Handle edge cases
-  if (seconds < 0) {
-    return verbose ? '0 seconds' : '0s';
-  }
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  if (verbose) {
-    // Verbose format with full words and pluralization
-    const parts: string[] = [];
-
-    if (hours > 0) {
-      parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
-    }
-
-    if (minutes > 0) {
-      parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
-    }
-
-    // For verbose mode, always show seconds if it's the only unit or if showSeconds is true
-    if ((showSeconds && secs > 0) || (hours === 0 && minutes === 0)) {
-      parts.push(`${secs} second${secs !== 1 ? 's' : ''}`);
-    }
-
-    return parts.join(' ') || '0 seconds';
-  } else {
-    // Short format
-    const parts: string[] = [];
-
-    if (hours > 0) {
-      parts.push(`${hours}h`);
-    }
-
-    if (minutes > 0) {
-      parts.push(`${minutes}m`);
-    }
-
-    // For short format, show seconds if:
-    // 1. showSeconds is true and there are seconds to show, OR
-    // 2. There are no hours or minutes (duration is less than a minute)
-    if ((showSeconds && secs > 0) || (hours === 0 && minutes === 0)) {
-      parts.push(`${secs}s`);
-    }
-
-    return parts.join(' ') || '0s';
-  }
-}
-
-/**
- * Parses contract error messages and returns user-friendly error descriptions.
- *
- * Handles common contract error patterns including:
- * - Time lock errors (shows duration with proper formatting)
- * - Ownership errors
- * - Validation errors
- * - Quiz submission errors
- * - Generic fallback for unknown errors
- *
- * @param err - The error object from a contract call
- * @param timeLockDuration - Optional time lock duration in seconds (for time-locked operations)
- * @returns A user-friendly error message string
- *
- * @example
- * ```typescript
- * try {
- *   await contract.execute(...);
- * } catch (err) {
- *   const message = parseContractError(err, 86400);
- *   console.error(message);
- * }
- * ```
- */
-export function parseContractError(err: any, timeLockDuration?: number): string {
-  // Return generic message if no error message exists
-  if (!err?.message) {
-    return 'An unknown error occurred';
-  }
-
-  const errorMessage = err.message;
-
-  // Time lock errors
-  if (errorMessage.includes('Time lock not elapsed')) {
-    if (timeLockDuration) {
-      const formattedDuration = formatDuration(timeLockDuration, { verbose: true });
-      return `You must wait ${formattedDuration} after minting before completing this trial`;
-    }
-    return 'The time lock has not elapsed yet';
-  }
-
-  // Ownership errors
-  if (errorMessage.includes('Not token owner') || errorMessage.includes('not the owner')) {
-    return 'You do not own this token';
-  }
-
-  // Validation errors
-  if (errorMessage.includes('Vow cannot be empty')) {
-    return 'Please write your vow';
-  }
-
-  if (errorMessage.includes('cannot be empty') || errorMessage.includes('required')) {
-    return 'Please provide all required information';
-  }
-
-  // Quiz-specific errors
-  if (errorMessage.includes('incorrect') || errorMessage.includes('Incorrect answers')) {
-    return 'Not enough correct answers. You need at least 3 correct to pass.';
-  }
-
-  // Completion status errors
-  if (errorMessage.includes('already completed')) {
-    return 'You have already completed this trial';
-  }
-
-  if (errorMessage.includes('not eligible') || errorMessage.includes('cannot complete')) {
-    return 'You are not eligible to complete this trial';
-  }
-
-  // Transaction errors
-  if (errorMessage.includes('rejected') || errorMessage.includes('User rejected')) {
-    return 'Transaction was rejected';
-  }
-
-  if (errorMessage.includes('insufficient funds') || errorMessage.includes('balance')) {
-    return 'Insufficient funds to complete this transaction';
-  }
-
-  // Generic fallback - return the original message if no pattern matches
-  return errorMessage;
-}
 
 /**
  * Executes a transaction on Starknet and waits for confirmation.
@@ -214,7 +13,7 @@ export function parseContractError(err: any, timeLockDuration?: number): string 
  *
  * @param account - The Starknet account interface to execute the transaction from
  * @param calls - The transaction call(s) to execute (single Call or array of Calls)
- * @param label - Optional label for logging (e.g., "Waza Trial Transaction", "Chi Trial Transaction")
+ * @param label - Optional label for logging (e.g., "Place Piece", "Start Game")
  * @returns The transaction result from account.execute()
  * @throws Error if the transaction execution reverted
  *
@@ -224,23 +23,10 @@ export function parseContractError(err: any, timeLockDuration?: number): string 
  *   account,
  *   {
  *     contractAddress: contractAddr,
- *     entrypoint: 'complete_trial',
- *     calldata: [tokenId]
+ *     entrypoint: 'place_piece',
+ *     calldata: [gameId, pieceId, x, y, rotation, flipped]
  *   },
- *   'Waza Trial Transaction'
- * );
- * ```
- *
- * @example
- * ```typescript
- * // Execute multiple calls in one transaction
- * const result = await executeTx(
- *   account,
- *   [
- *     { contractAddress: addr1, entrypoint: 'approve', calldata: [...] },
- *     { contractAddress: addr2, entrypoint: 'transfer', calldata: [...] }
- *   ],
- *   'Multi-call Transaction'
+ *   'Place Piece Transaction'
  * );
  * ```
  */
@@ -271,25 +57,81 @@ export async function executeTx(
 }
 
 /**
- * Returns a set of boolean flags based on the trial status.
+ * Parses contract error messages and returns user-friendly error descriptions.
  *
- * This utility provides convenient boolean flags for common trial status checks,
- * reducing duplication across trial components.
+ * Handles common contract error patterns including:
+ * - Game state errors
+ * - Piece placement errors
+ * - Validation errors
+ * - Transaction errors
+ * - Generic fallback for unknown errors
  *
- * @param status - The current status of the trial
- * @returns An object containing boolean flags for different status states
+ * @param err - The error object from a contract call
+ * @returns A user-friendly error message string
  *
  * @example
  * ```typescript
- * const { isDisabled, isCompleted, isAvailable, isLocked } = getTrialStatusFlags('completed');
- * // Returns: { isDisabled: true, isCompleted: true, isAvailable: false, isLocked: false }
+ * try {
+ *   await contract.execute(...);
+ * } catch (err) {
+ *   const message = parseContractError(err);
+ *   console.error(message);
+ * }
  * ```
  */
-export function getTrialStatusFlags(status: TrialStatus) {
-  return {
-    isDisabled: status === 'completed' || status === 'locked',
-    isCompleted: status === 'completed',
-    isAvailable: status === 'available',
-    isLocked: status === 'locked',
-  };
+export function parseContractError(err: any): string {
+  // Return generic message if no error message exists
+  if (!err?.message) {
+    return 'An unknown error occurred';
+  }
+
+  const errorMessage = err.message;
+
+  // Game state errors
+  if (errorMessage.includes('Game not found') || errorMessage.includes('does not exist')) {
+    return 'Game not found. Please start a new game.';
+  }
+
+  if (errorMessage.includes('already solved') || errorMessage.includes('Game complete')) {
+    return 'This game has already been completed';
+  }
+
+  // Piece placement errors
+  if (errorMessage.includes('Invalid piece') || errorMessage.includes('Piece not found')) {
+    return 'Invalid piece selected';
+  }
+
+  if (errorMessage.includes('Out of bounds') || errorMessage.includes('Invalid position')) {
+    return 'Piece placement is out of bounds';
+  }
+
+  if (errorMessage.includes('overlaps') || errorMessage.includes('collision')) {
+    return 'Piece overlaps with another piece';
+  }
+
+  if (errorMessage.includes('already placed')) {
+    return 'This piece has already been placed';
+  }
+
+  // Validation errors
+  if (errorMessage.includes('cannot be empty') || errorMessage.includes('required')) {
+    return 'Please provide all required information';
+  }
+
+  // Transaction errors
+  if (errorMessage.includes('rejected') || errorMessage.includes('User rejected')) {
+    return 'Transaction was rejected';
+  }
+
+  if (errorMessage.includes('insufficient funds') || errorMessage.includes('balance')) {
+    return 'Insufficient funds to complete this transaction';
+  }
+
+  // Permission errors
+  if (errorMessage.includes('not authorized') || errorMessage.includes('permission')) {
+    return 'You are not authorized to perform this action';
+  }
+
+  // Generic fallback - return the original message if no pattern matches
+  return errorMessage;
 }

@@ -9,6 +9,7 @@ import {
   KATANA_CHAIN_ID,
   SEPOLIA_CHAIN_ID,
   MAINNET_CHAIN_ID,
+  SLOT_CHAIN_ID,
   KATANA_URL,
 } from "@/lib/config";
 import controller from "@/lib/ControllerConnector";
@@ -37,6 +38,28 @@ export function StarknetProvider({ children }: PropsWithChildren) {
     },
   };
 
+  const slot: Chain = {
+    id: BigInt(SLOT_CHAIN_ID),
+    name: "Kanoodle fusion",
+    network: "kanoodle-fusion",
+    nativeCurrency: {
+      address: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      name: "Stark",
+      symbol: "STRK",
+      decimals: 18,
+    },
+    rpcUrls: {
+      default: { http: [DEFAULT_RPC_URL] },
+      public: { http: [DEFAULT_RPC_URL] },
+    },
+    paymasterRpcUrls: {
+      avnu: {
+          http: ["http://localhost:5050"],
+      },
+    },
+  };
+  
+
   function getChainForEnv(chainId: string): Chain {
     switch (chainId) {
       case KATANA_CHAIN_ID:
@@ -45,6 +68,8 @@ export function StarknetProvider({ children }: PropsWithChildren) {
         return sepolia;
       case MAINNET_CHAIN_ID:
         return mainnet;
+      case SLOT_CHAIN_ID:
+        return slot;
       default:
         return katana;
     }

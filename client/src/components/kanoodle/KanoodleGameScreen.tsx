@@ -14,11 +14,12 @@ import { SettingsPopup } from '../SettingsPopup';
 import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 import { getKanoodleText } from '../../lib/uiText';
 import { audioManager } from '../../lib/audioManager';
-import { rotateClockwise } from '../../lib/kanoodle/pieceUtils';
+import { rotateClockwise, transformPiece, predictBoardAfterPlacement } from '../../lib/kanoodle/pieceUtils';
 import {
   Rotations,
   type GamePiece,
-  type RotationValue
+  type RotationValue,
+  gamePieceToCells
 } from '../../lib/kanoodle/types';
 
 export function KanoodleGameScreen() {
@@ -34,6 +35,15 @@ export function KanoodleGameScreen() {
   const [selectedPiece, setSelectedPiece] = useState<GamePiece | null>(null);
   const [availablePieces, setAvailablePieces] = useState<GamePiece[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [showLevelComplete, setShowLevelCompleteInternal] = useState(false);
+  const [nextLevelNumber, setNextLevelNumber] = useState<number | null>(null);
+  const [hasShownCompletion, setHasShownCompletion] = useState(false);
+
+  // Wrapper to log state changes
+  const setShowLevelComplete = (value: boolean) => {
+    console.log('🎭 Setting showLevelComplete:', value);
+    setShowLevelCompleteInternal(value);
+  };
 
   // Store transformations for each piece (by piece_id)
   const [pieceTransformations, setPieceTransformations] = useState<
@@ -120,13 +130,51 @@ export function KanoodleGameScreen() {
     loadPieces();
   }, [currentLevel, getPieceDefinition, selectedPiece]);
 
-  // Check if level is complete
-  // NOTE: Level completion should be checked by the contract
-  // For now, we'll rely on contract events or manual checking
+  // Reset completion flag when level changes
   useEffect(() => {
-    // TODO: Listen to contract events for game completion
-    // For now, level completion UI is disabled
-  }, []);
+    console.log('🔄 Level changed to:', gameState?.level_id);
+    setHasShownCompletion(false);
+  }, [gameState?.level_id]);
+
+  // Monitor game state changes to detect level completion
+  useEffect(() => {
+    if (!gameState || !currentLevel) return;
+
+    console.log('📊 Game State Update:', {
+      level_id: gameState.level_id,
+      current_solution: gameState.current_solution,
+      target_solution: currentLevel.solution,
+      placed_pieces: gameState.placed_piece_ids,
+      hasShownCompletion
+    });
+
+    // Convert BigInt to Number for comparison
+    const currentSolution = gameState.current_solution.map(c => Number(c));
+    const targetSolution = currentLevel.solution.map(t => Number(t));
+    const isComplete = currentSolution.every((color, index) => color === targetSolution[index]);
+    const hasContent = currentSolution.some(c => c !== 0);
+
+    console.log('🎯 Completion check:', {
+      isComplete,
+      hasContent,
+      hasShownCompletion,
+      currentSolution,
+      targetSolution
+    });
+
+    if (isComplete && hasContent && !hasShownCompletion) {
+      console.log('🎉 LEVEL COMPLETE DETECTED! Showing animation...');
+      setShowLevelComplete(true);
+      setNextLevelNumber(Number(gameState.level_id || 0) + 1);
+      setHasShownCompletion(true);
+
+      setTimeout(() => {
+        console.log('⏭️  Hiding animation and advancing to next level...');
+        setShowLevelComplete(false);
+        handleNextLevel();
+      }, 3000);
+    }
+  }, [gameState?.current_solution, gameState?.level_id, currentLevel?.solution, hasShownCompletion]);
 
   // Handlers
   const handlePieceSelect = (piece: GamePiece) => {
@@ -163,8 +211,44 @@ export function KanoodleGameScreen() {
   };
 
   const handleBoardClick = async (x: number, y: number) => {
-    if (!selectedPiece || !gameId || !address) return;
+    if (!selectedPiece || !gameId || !address || !currentLevel || !gameState) return;
 
+    console.log('🎮 Placing piece:', {
+      piece_id: selectedPiece.piece_id,
+      position: { x, y },
+      rotation: pieceRotation,
+      flipped: pieceFlipped,
+      current_level: gameState.level_id
+    });
+
+    // Predict if this placement will complete the level BEFORE placing
+    const pieceCells = gamePieceToCells(selectedPiece);
+    const transformedCells = transformPiece(pieceCells, pieceRotation, pieceFlipped);
+
+    // Convert BigInt to Number for prediction
+    const currentBoardNumbers = gameState.current_solution.map(c => Number(c));
+    const predictedBoard = predictBoardAfterPlacement(
+      currentBoardNumbers,
+      transformedCells,
+      x,
+      y
+    );
+
+    // Check if predicted board matches target
+    const targetSolution = currentLevel.solution.map(t => Number(t));
+    const willComplete = predictedBoard.every((color, index) => color === targetSolution[index]) &&
+                        predictedBoard.some(c => c !== 0);
+
+    console.log('🔮 Predicting completion:', {
+      willComplete,
+      predictedBoard,
+      targetSolution,
+      currentBoard: currentBoardNumbers,
+      currentLevel: gameState.level_id
+    });
+
+    // Place the piece
+    console.log('⏳ Sending placement transaction...');
     const success = await placePiece(
       selectedPiece.piece_id,
       x,
@@ -172,6 +256,8 @@ export function KanoodleGameScreen() {
       pieceRotation,
       pieceFlipped
     );
+
+    console.log('✅ Placement result:', success);
 
     if (success) {
       // Clear the transformation for this piece after placement
@@ -182,13 +268,29 @@ export function KanoodleGameScreen() {
       });
 
       // Select the first available (non-placed) piece
-      // We need to wait for gameState to update, so we'll use the current placed_piece_ids plus the one we just placed
       const updatedPlacedIds = [...(gameState?.placed_piece_ids || []), selectedPiece.piece_id];
       const firstAvailable = availablePieces.find(
         (piece) => !updatedPlacedIds.includes(piece.piece_id)
       );
 
       setSelectedPiece(firstAvailable || null);
+
+      // If we predicted completion, show the animation immediately
+      if (willComplete && !hasShownCompletion) {
+        console.log('🎊 Level WILL complete! Showing animation NOW (predicted)...');
+        setShowLevelComplete(true);
+        setNextLevelNumber(Number(gameState.level_id || 0) + 1);
+        setHasShownCompletion(true);
+
+        // Auto-hide after 3 seconds and go to next level
+        setTimeout(() => {
+          console.log('⏭️  Hiding animation and advancing to next level...');
+          setShowLevelComplete(false);
+          handleNextLevel();
+        }, 3000);
+      } else {
+        console.log('⚪ Level not complete yet (predicted)');
+      }
     }
   };
 
@@ -213,9 +315,9 @@ export function KanoodleGameScreen() {
   };
 
   const handleNextLevel = () => {
-    // TODO: Implement level progression
-    // For now, just go back to home
-    navigate('/home');
+    // Just hide the animation, don't navigate anywhere
+    // The game will automatically load the next level from the contract
+    console.log('📍 Staying on current screen, next level will load automatically');
   };
 
   if (!address) {
@@ -401,6 +503,43 @@ export function KanoodleGameScreen() {
 
       {/* Settings Popup */}
       {showSettings && <SettingsPopup onClose={() => setShowSettings(false)} />}
+
+      {/* Level Complete Animation - C64 Style */}
+      {(() => {
+        console.log('🎬 Render animation state:', { showLevelComplete, nextLevelNumber });
+        return showLevelComplete && nextLevelNumber !== null && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm animate-fade-in">
+            <div className="text-center animate-bounce-in">
+              {/* YOU PASSED! */}
+              <div className="mb-6">
+                <h1
+                  className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#AAFFEE] c64-text-glow mb-2 animate-pulse"
+                  style={{ fontFamily: 'Press Start 2P, monospace' }}
+                >
+                  {text.youPassed}
+                </h1>
+              </div>
+
+              {/* NEXT X */}
+              <div className="bg-[#6C5EB5] border-4 border-[#A4A0E4] px-8 py-6 c64-text-glow">
+                <p
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EEEE77]"
+                  style={{ fontFamily: 'Press Start 2P, monospace' }}
+                >
+                  {text.next} {nextLevelNumber}
+                </p>
+              </div>
+
+              {/* Decorative stars */}
+              <div className="mt-6 flex justify-center gap-4">
+                <span className="text-4xl text-[#EEEE77] animate-spin-slow">★</span>
+                <span className="text-5xl text-[#AAFFEE] animate-pulse">★</span>
+                <span className="text-4xl text-[#EEEE77] animate-spin-slow">★</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Error display - C64 Style */}
       {error && (

@@ -49,6 +49,8 @@ export const KANOODLE_TEXT = {
       success: "LEVEL COMPLETE!",
       nextLevel: "NEXT LEVEL",
       allComplete: "ALL LEVELS COMPLETE!",
+      youPassed: "YOU PASSED!",
+      next: "NEXT",
     },
     // Tutorial
     tutorial: {
@@ -97,6 +99,8 @@ export const KANOODLE_TEXT = {
       success: "¡NIVEL COMPLETADO!",
       nextLevel: "SIGUIENTE NIVEL",
       allComplete: "¡TODOS LOS NIVELES COMPLETADOS!",
+      youPassed: "¡PASASTE!",
+      next: "SIGUIENTE",
     },
     // Tutorial
     tutorial: {
@@ -145,6 +149,8 @@ export const KANOODLE_TEXT = {
       success: "レベルクリア！",
       nextLevel: "次のレベル",
       allComplete: "全レベルクリア！",
+      youPassed: "クリア！",
+      next: "次",
     },
     // Tutorial
     tutorial: {

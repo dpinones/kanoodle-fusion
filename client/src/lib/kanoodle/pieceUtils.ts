@@ -179,3 +179,92 @@ export function rotateClockwise(current: RotationValue): RotationValue {
 export function rotateCounterClockwise(current: RotationValue): RotationValue {
   return ((current + 3) % 4) as RotationValue;
 }
+
+/**
+ * Predict the resulting board state after placing a piece
+ * @param currentBoard - Current board solution (16 cells)
+ * @param pieceCells - Piece cells to place (already transformed)
+ * @param boardX - X position on board
+ * @param boardY - Y position on board
+ * @returns Predicted board state after placement
+ */
+export function predictBoardAfterPlacement(
+  currentBoard: number[],
+  pieceCells: PieceCell[],
+  boardX: number,
+  boardY: number
+): number[] {
+  const BOARD_SIZE = 4;
+  const newBoard = [...currentBoard];
+
+  // Add each piece cell to the board
+  for (const cell of pieceCells) {
+    const finalX = boardX + cell.x;
+    const finalY = boardY + cell.y;
+    const index = finalY * BOARD_SIZE + finalX;
+
+    // Mix colors additively
+    // This is a simplified version - you may need to match the contract's mixing logic
+    const currentColor = newBoard[index];
+    const newColor = cell.color;
+
+    // If current is empty, just use new color
+    if (currentColor === 0) {
+      newBoard[index] = newColor;
+    } else if (newColor === 0) {
+      // If new color is empty, keep current
+      newBoard[index] = currentColor;
+    } else {
+      // Otherwise, mix colors
+      // This should match the contract's color mixing logic
+      // For now, using a simplified approach
+      newBoard[index] = mixColors(currentColor, newColor);
+    }
+  }
+
+  return newBoard;
+}
+
+/**
+ * Mix two colors together (simplified version)
+ * TODO: Match this with the contract's actual mixing logic
+ */
+function mixColors(color1: number, color2: number): number {
+  // Color constants matching the contract
+  const EMPTY = 0;
+  const RED = 1;
+  const YELLOW = 2;
+  const BLUE = 3;
+  const GREEN = 4;
+  const ORANGE = 5;
+  const PURPLE = 6;
+  const NEUTRAL = 7;
+
+  // If either is neutral, result is neutral
+  if (color1 === NEUTRAL || color2 === NEUTRAL) return NEUTRAL;
+
+  // Same color = same color
+  if (color1 === color2) return color1;
+
+  // Primary + Primary mixing
+  if (color1 === RED && color2 === YELLOW) return ORANGE;
+  if (color1 === YELLOW && color2 === RED) return ORANGE;
+  if (color1 === RED && color2 === BLUE) return PURPLE;
+  if (color1 === BLUE && color2 === RED) return PURPLE;
+  if (color1 === YELLOW && color2 === BLUE) return GREEN;
+  if (color1 === BLUE && color2 === YELLOW) return GREEN;
+
+  // Secondary + Primary (results in EMPTY/muddy)
+  if ((color1 === ORANGE && color2 === BLUE) || (color1 === BLUE && color2 === ORANGE)) return EMPTY;
+  if ((color1 === PURPLE && color2 === YELLOW) || (color1 === YELLOW && color2 === PURPLE)) return EMPTY;
+  if ((color1 === GREEN && color2 === RED) || (color1 === RED && color2 === GREEN)) return EMPTY;
+
+  // Secondary + Secondary = EMPTY
+  if ((color1 === ORANGE || color1 === PURPLE || color1 === GREEN) &&
+      (color2 === ORANGE || color2 === PURPLE || color2 === GREEN)) {
+    return EMPTY;
+  }
+
+  // Default to EMPTY if we don't know
+  return EMPTY;
+}

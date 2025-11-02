@@ -29,6 +29,11 @@ const policies: SessionPolicies = {
             entrypoint: "reset",
             description: "Reset the game",
           },
+          {
+            name: "undo",
+            entrypoint: "undo",
+            description: "Undo the last move",
+          },
         ],
       },
     } : {}),

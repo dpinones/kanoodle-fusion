@@ -1491,7 +1491,7 @@
   "contracts": [
     {
       "address": "0x38630f3e6d4480299a6db0908ab403e75d2c689a4de572d064bc1da77deda04",
-      "class_hash": "0x5f3ceb31b63e0ea0d6d220645f3674937b4c3bac5e47a011eb6efb8200736b9",
+      "class_hash": "0x1cf78adf3d9c95dfff25bb5fae018564e8fbb2b9c6e2dbb85be0362745d2f14",
       "abi": [
         {
           "type": "impl",
@@ -1672,6 +1672,22 @@
             {
               "type": "function",
               "name": "reset",
+              "inputs": [
+                {
+                  "name": "game_id",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "undo",
               "inputs": [
                 {
                   "name": "game_id",
@@ -1926,6 +1942,7 @@
         "start_game",
         "place_piece",
         "reset",
+        "undo",
         "upgrade"
       ]
     }

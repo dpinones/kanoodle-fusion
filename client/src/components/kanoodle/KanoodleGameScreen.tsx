@@ -39,6 +39,7 @@ export function KanoodleGameScreen() {
   const [showLevelComplete, setShowLevelCompleteInternal] = useState(false);
   const [nextLevelNumber, setNextLevelNumber] = useState<number | null>(null);
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
+  const [dragPreviewPosition, setDragPreviewPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Wrapper to log state changes
   const setShowLevelComplete = (value: boolean) => {
@@ -69,6 +70,7 @@ export function KanoodleGameScreen() {
     error,
     placePiece,
     resetGame,
+    undoGame,
     loadLevel,
     getPieceDefinition,
     refreshGameState,
@@ -335,12 +337,53 @@ export function KanoodleGameScreen() {
   };
 
   const handleDragEnd = () => {
-    // Cleanup if needed
+    // Clear preview when drag ends
+    setDragPreviewPosition(null);
   };
 
-  const handleBoardDrop = async (x: number, y: number) => {
-    // Same as click handler
-    await handleBoardClick(x, y);
+  const handleBoardDragOver = (e: React.DragEvent) => {
+    if (!selectedPiece) return;
+
+    // Get the board element's position
+    const boardElement = e.currentTarget as HTMLElement;
+    const boardRect = boardElement.getBoundingClientRect();
+
+    // Calculate mouse position relative to board
+    const mouseX = e.clientX - boardRect.left;
+    const mouseY = e.clientY - boardRect.top;
+
+    // Calculate which cell the mouse is over (using board cell size of 45px)
+    const boardCellSize = 45;
+    const cellX = Math.floor(mouseX / boardCellSize);
+    const cellY = Math.floor(mouseY / boardCellSize);
+
+    // Update preview position
+    setDragPreviewPosition({ x: cellX, y: cellY });
+  };
+
+  const handleBoardDrop = async (e: React.DragEvent) => {
+    if (!selectedPiece) return;
+
+    // Clear preview immediately
+    setDragPreviewPosition(null);
+
+    // Get the board element's position
+    const boardElement = e.currentTarget as HTMLElement;
+    const boardRect = boardElement.getBoundingClientRect();
+
+    // Calculate mouse position relative to board
+    const mouseX = e.clientX - boardRect.left;
+    const mouseY = e.clientY - boardRect.top;
+
+    // Calculate which cell the mouse is over (using board cell size of 45px)
+    const boardCellSize = 45;
+    const cellX = Math.floor(mouseX / boardCellSize);
+    const cellY = Math.floor(mouseY / boardCellSize);
+
+    console.log('Drop at cell:', { x: cellX, y: cellY });
+
+    // The drag image origin (0,0) is at the cursor, so place directly at cursor position
+    await handleBoardClick(cellX, cellY);
   };
 
   const handleBackToHome = () => {
@@ -397,6 +440,20 @@ export function KanoodleGameScreen() {
       if (availablePieces.length > 0) {
         setSelectedPiece(availablePieces[0]);
       }
+    }
+  };
+
+  const handleUndo = async () => {
+    console.log('↩️ Undoing last piece...');
+    audioManager.playButtonClick();
+
+    const success = await undoGame();
+    console.log('🔄 Undo result:', success);
+
+    if (success) {
+      console.log('✅ Last piece removed successfully');
+    } else {
+      console.log('❌ Failed to undo (no pieces to remove or error)');
     }
   };
 
@@ -498,17 +555,27 @@ export function KanoodleGameScreen() {
                   targetSolution={currentLevel?.solution || new Array(16).fill(0)}
                   cellSize={45}
                   onCellClick={handleBoardClick}
-                  onCellDrop={handleBoardDrop}
+                  onBoardDrop={handleBoardDrop}
+                  onBoardDragOver={handleBoardDragOver}
                   highlightErrors={false}
+                  previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped) : null}
+                  previewPosition={dragPreviewPosition}
                 />
               </div>
 
-              {/* Clear button */}
-              <div className="mt-3">
+              {/* Undo and Clear buttons */}
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={handleUndo}
+                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#0088FF] border-[#006CD8]"
+                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                >
+                  {text.undoButton}
+                </button>
                 <button
                   onClick={handleClearBoard}
-                  className="w-full c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
-                  disabled={isLoading}
+                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
+                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
                 >
                    {text.clearButton}
                 </button>

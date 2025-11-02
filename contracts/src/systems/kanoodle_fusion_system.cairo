@@ -15,6 +15,7 @@ pub trait IKanoodleSystem<T> {
         flipped: bool,
     ) -> bool;
     fn reset(ref self: T, game_id: u32) -> bool;
+    fn undo(ref self: T, game_id: u32) -> bool;
     fn get_game_state(self: @T, game_id: u32, player: ContractAddress) -> KanoodleGame;
 }
 
@@ -484,6 +485,45 @@ pub mod kanoodle_fusion_system {
             let empty_solution = array![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             game.current_solution = empty_solution.span();
             game.placed_piece_ids = array![].span();
+            store.set_kanoodle_game(game);
+
+            true
+        }
+
+        fn undo(ref self: ContractState, game_id: u32) -> bool {
+            let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
+            let mut game = store.get_kanoodle_game(game_id);
+
+            // Check if there are any pieces to undo
+            if game.placed_piece_ids.len() == 0 {
+                return false; // Nothing to undo
+            }
+
+            // Get the last placed piece ID
+            let last_piece_id = *game.placed_piece_ids.at(game.placed_piece_ids.len() - 1);
+
+            // Remove the piece from storage
+            store.delete_placed_piece(game_id, game.player, last_piece_id);
+
+            // Emit event for piece removal
+            self.emit(PieceRemoved { game_id, player: game.player, piece_id: last_piece_id });
+
+            // Update placed_piece_ids by removing the last element
+            let mut new_placed_ids = array![];
+            let mut i = 0;
+            loop {
+                if i >= game.placed_piece_ids.len() - 1 {
+                    break;
+                }
+                new_placed_ids.append(*game.placed_piece_ids.at(i));
+                i += 1;
+            }
+
+            // Recalculate current_solution based on remaining placed pieces
+            let new_solution = rebuild_current_solution(game_id, game.player, ref store);
+
+            game.placed_piece_ids = new_placed_ids.span();
+            game.current_solution = new_solution;
             store.set_kanoodle_game(game);
 
             true

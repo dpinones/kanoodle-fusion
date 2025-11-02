@@ -54,6 +54,21 @@ const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
     state_mutability: 'external',
   },
   {
+              name: 'undo',
+              inputs: [
+                {
+                  name: 'game_id',
+                  type: 'core::integer::u32'
+                }
+              ],
+              outputs: [
+                {
+                  type: 'core::bool'
+                }
+              ],
+              state_mutability: 'external'
+            },
+  {
     name: 'get_game_state',
     type: 'function',
     inputs: [
@@ -84,6 +99,7 @@ interface UseKanoodleGameReturn {
   ) => Promise<boolean>;
   removePiece: (pieceId: number) => Promise<boolean>; // Deprecated - use resetGame instead
   resetGame: () => Promise<boolean>;
+  undoGame: () => Promise<boolean>;
   refreshGameState: () => Promise<void>;
   loadLevel: (levelId: number) => Promise<void>;
   getPieceDefinition: (pieceId: number) => Promise<GamePiece | null>;
@@ -309,6 +325,47 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
     [account, gameId]
   );
 
+  // Undo the last placed piece
+  const undoGame = useCallback(
+    async (): Promise<boolean> => {
+      if (!account || !gameId) {
+        setError('Game not initialized');
+        return false;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        console.log('Undoing last piece:', gameId);
+
+        const tx = await account.execute({
+          contractAddress: KANOODLE_SYSTEM_ADDRESS,
+          entrypoint: 'undo',
+          calldata: [gameId],
+        });
+
+        console.log('Undo transaction sent:', tx.transaction_hash);
+
+        await account.waitForTransaction(tx.transaction_hash, {
+          retryInterval: 100,
+        });
+
+        console.log('Undo successful');
+        await refreshGameState();
+        return true;
+      } catch (err: any) {
+        console.error('Failed to undo:', err);
+        const errorMessage = err?.message || 'Failed to undo last piece';
+        setError(errorMessage);
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [account, gameId]
+  );
+
   // Refresh game state from contract
   const refreshGameState = useCallback(async () => {
     if (!contract || !address || !gameId) return;
@@ -416,6 +473,7 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
     placePiece,
     removePiece,
     resetGame,
+    undoGame,
     refreshGameState,
     loadLevel,
     getPieceDefinition,

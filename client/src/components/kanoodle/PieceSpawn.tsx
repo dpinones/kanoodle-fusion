@@ -3,6 +3,7 @@
  * Displays available pieces that can be selected, rotated, flipped, and dragged
  */
 
+import { useRef } from 'react';
 import { Piece } from './Piece';
 import { gamePieceToCells, type RotationValue } from '../../lib/kanoodle/types';
 import { audioManager } from '../../lib/audioManager';
@@ -36,6 +37,9 @@ export function PieceSpawn({
 }: PieceSpawnProps) {
   // Debug: Log placed pieces
   console.log('PieceSpawn - Placed piece IDs:', placedPieceIds);
+
+  // Ref to store piece elements for creating custom drag images
+  const pieceRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   return (
     <div className="c64-border bg-[#6C5EB5] p-4">
@@ -86,6 +90,26 @@ export function PieceSpawn({
               }}
               onDragStart={(e) => {
                 if (isSelected && !isPlaced) {
+                  // Get the piece element
+                  const pieceElement = pieceRefs.current[piece.piece_id];
+                  if (pieceElement) {
+                    // Create a custom drag image with only the piece shape (no container)
+                    const dragImage = pieceElement.cloneNode(true) as HTMLElement;
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-1000px';
+                    document.body.appendChild(dragImage);
+
+                    // Set the custom drag image
+                    e.dataTransfer.setDragImage(dragImage,
+                      Math.floor(pieceElement.offsetWidth / 2),
+                      Math.floor(pieceElement.offsetHeight / 2)
+                    );
+
+                    // Clean up the temporary element after drag starts
+                    setTimeout(() => {
+                      document.body.removeChild(dragImage);
+                    }, 0);
+                  }
                   onDragStart(e);
                 }
               }}
@@ -97,7 +121,10 @@ export function PieceSpawn({
               </div>
 
               {/* Piece visual */}
-              <div className="flex items-center justify-center min-h-[80px]">
+              <div
+                ref={(el) => { pieceRefs.current[piece.piece_id] = el; }}
+                className="flex items-center justify-center min-h-[80px]"
+              >
                 <Piece
                   cells={cells}
                   cellSize={cellSize}

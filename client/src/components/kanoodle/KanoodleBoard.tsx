@@ -70,10 +70,10 @@ export const KanoodleBoard = memo(function KanoodleBoard({
     <div className="relative inline-block">
       {/* Board container - C64 Style */}
       <div
-        className="relative c64-border bg-[#000000] p-2"
+        className="relative bg-[#000000] border-2 border-[#A4A0E4]"
         style={{
-          width: `${boardWidth + 16}px`,
-          height: `${boardHeight + 16}px`,
+          width: `${boardWidth}px`,
+          height: `${boardHeight}px`,
         }}
       >
         {/* Grid cells */}
@@ -88,10 +88,10 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                   onCellClick || onCellDrop ? 'cursor-pointer' : ''
                 }`}
                 style={{
-                  left: `${cell.x * cellSize + 8}px`,
-                  top: `${cell.y * cellSize + 8}px`,
-                  width: `${cellSize - 4}px`,
-                  height: `${cellSize - 4}px`,
+                  left: `${cell.x * cellSize}px`,
+                  top: `${cell.y * cellSize}px`,
+                  width: `${cellSize}px`,
+                  height: `${cellSize}px`,
                 }}
                 onClick={() => onCellClick?.(cell.x, cell.y)}
                 onDragOver={(e) => {
@@ -107,80 +107,39 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                   onCellDrop?.(cell.x, cell.y);
                 }}
               >
-                {/* Cell background (target color faded) - C64 Style */}
+                {/* Cell with color - C64 Style matching TargetBoard */}
                 <div
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="w-full h-full flex items-center justify-center"
                   style={{
-                    backgroundColor: colorPalette[cell.targetColor],
-                    opacity: 0.3,
+                    backgroundColor: cell.currentColor !== 0
+                      ? colorPalette[cell.currentColor]
+                      : colorPalette[cell.targetColor],
+                    opacity: cell.currentColor !== 0 ? 1 : 0.3,
+                    border: '2px solid #333333',
+                    boxShadow: showError
+                      ? 'inset 0 0 8px rgba(136, 0, 0, 0.8), 0 0 8px #880000'
+                      : 'inset 2px 2px 0 rgba(255, 255, 255, 0.2), inset -2px -2px 0 rgba(0, 0, 0, 0.3)',
                   }}
                 >
-                  {/* Target color symbol (faded) */}
-                  {colorblindMode && cell.targetColor !== 0 && (
+                  {/* Symbol in colorblind mode */}
+                  {colorblindMode && (cell.currentColor !== 0 ? cell.currentColor : cell.targetColor) !== 0 && (
                     <span
-                      className="text-black opacity-50 font-bold"
-                      style={{ fontSize: `${cellSize * 0.4}px` }}
+                      className="text-black font-bold drop-shadow-sm"
+                      style={{
+                        fontSize: `${cellSize * 0.5}px`,
+                        textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)'
+                      }}
                     >
-                      {ColorSymbol[cell.targetColor]}
+                      {ColorSymbol[(cell.currentColor !== 0 ? cell.currentColor : cell.targetColor) as ColorValue]}
                     </span>
                   )}
                 </div>
-
-                {/* Current color overlay - C64 Style */}
-                {cell.currentColor !== 0 && (
-                  <div
-                    className="absolute inset-0 transition-all duration-100 flex items-center justify-center"
-                    style={{
-                      backgroundColor: colorPalette[cell.currentColor],
-                      boxShadow: showError
-                        ? 'inset 0 0 8px rgba(136, 0, 0, 0.8), 0 0 8px #880000'
-                        : cell.isCorrect
-                        ? 'inset 0 0 8px rgba(0, 204, 85, 0.8), 0 0 8px #00CC55'
-                        : 'inset 2px 2px 0 rgba(255, 255, 255, 0.2), inset -2px -2px 0 rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    {/* Checkmark for correct cells OR symbol in colorblind mode */}
-                    {cell.isCorrect ? (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[#AAFFEE] text-2xl font-bold c64-text-glow">✓</span>
-                      </div>
-                    ) : colorblindMode ? (
-                      <span
-                        className="text-black font-bold drop-shadow-sm"
-                        style={{
-                          fontSize: `${cellSize * 0.5}px`,
-                          textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)'
-                        }}
-                      >
-                        {ColorSymbol[cell.currentColor]}
-                      </span>
-                    ) : null}
-                  </div>
-                )}
-
-                {/* Grid coordinates (for debugging) */}
-                {import.meta.env.DEV && (
-                  <div className="absolute bottom-0 right-0 text-[8px] text-[#777777]">
-                    {cell.x},{cell.y}
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Board label - C64 Style */}
-      <div className="mt-3 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#6C5EB5] border-2 border-[#A4A0E4]">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#00CC55] animate-pulse" />
-            <span className="text-xs text-[#AAFFEE] c64-text-glow">
-              {cells.filter(c => c.isCorrect && c.currentColor !== 0).length} / {BOARD_SIZE * BOARD_SIZE}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 });

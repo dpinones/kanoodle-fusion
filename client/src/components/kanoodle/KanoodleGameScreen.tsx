@@ -180,7 +180,15 @@ export function KanoodleGameScreen() {
         delete newTransformations[selectedPiece.piece_id];
         return newTransformations;
       });
-      // Keep piece selected - don't deselect
+
+      // Select the first available (non-placed) piece
+      // We need to wait for gameState to update, so we'll use the current placed_piece_ids plus the one we just placed
+      const updatedPlacedIds = [...(gameState?.placed_piece_ids || []), selectedPiece.piece_id];
+      const firstAvailable = availablePieces.find(
+        (piece) => !updatedPlacedIds.includes(piece.piece_id)
+      );
+
+      setSelectedPiece(firstAvailable || null);
     }
   };
 
@@ -313,7 +321,7 @@ export function KanoodleGameScreen() {
                   cellSize={45}
                   onCellClick={handleBoardClick}
                   onCellDrop={handleBoardDrop}
-                  highlightErrors={true}
+                  highlightErrors={false}
                 />
               </div>
             </div>

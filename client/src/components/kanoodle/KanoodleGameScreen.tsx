@@ -8,13 +8,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount } from '@starknet-react/core';
 import { KanoodleBoard } from './KanoodleBoard';
 import { PieceSpawn } from './PieceSpawn';
-import { PiecePreview } from './PiecePreview';
 import { TargetBoard } from './TargetBoard';
 import { ConnectWallet } from './ConnectWallet';
 import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 import { getKanoodleText } from '../../lib/uiText';
 import { rotateClockwise } from '../../lib/kanoodle/pieceUtils';
-import { gamePieceToCells, Rotations, type GamePiece, type RotationValue } from '../../lib/kanoodle/types';
+import {
+  Rotations,
+  type GamePiece,
+  type RotationValue
+} from '../../lib/kanoodle/types';
 
 export function KanoodleGameScreen() {
   const text = getKanoodleText().game;
@@ -27,10 +30,23 @@ export function KanoodleGameScreen() {
 
   // Game state
   const [selectedPiece, setSelectedPiece] = useState<GamePiece | null>(null);
-  const [pieceRotation, setPieceRotation] = useState<RotationValue>(Rotations.DEG_0);
-  const [pieceFlipped, setPieceFlipped] = useState(false);
   const [availablePieces, setAvailablePieces] = useState<GamePiece[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Store transformations for each piece (by piece_id)
+  const [pieceTransformations, setPieceTransformations] = useState<
+    Record<number, { rotation: RotationValue; flipped: boolean }>
+  >({});
+
+  // Get current piece's transformation
+  const pieceRotation = selectedPiece
+    ? pieceTransformations[selectedPiece.piece_id]?.rotation ?? Rotations.DEG_0
+    : Rotations.DEG_0;
+  const pieceFlipped = selectedPiece
+    ? pieceTransformations[selectedPiece.piece_id]?.flipped ?? false
+    : false;
+
+  // Success modal is now disabled - will be triggered by contract events
+  // const [showSuccess, setShowSuccess] = useState(false);
 
   const {
     gameState,
@@ -91,37 +107,56 @@ export function KanoodleGameScreen() {
         }
       }
       setAvailablePieces(pieces);
+
+      // Auto-select first piece if none selected
+      if (pieces.length > 0 && !selectedPiece) {
+        setSelectedPiece(pieces[0]);
+      }
     };
 
     loadPieces();
-  }, [currentLevel, getPieceDefinition]);
+  }, [currentLevel, getPieceDefinition, selectedPiece]);
 
   // Check if level is complete
+  // NOTE: Level completion should be checked by the contract
+  // For now, we'll rely on contract events or manual checking
   useEffect(() => {
-    if (gameState?.is_solved && !showSuccess) {
-      setShowSuccess(true);
-    }
-  }, [gameState?.is_solved]);
+    // TODO: Listen to contract events for game completion
+    // For now, level completion UI is disabled
+  }, []);
 
   // Handlers
   const handlePieceSelect = (piece: GamePiece) => {
     setSelectedPiece(piece);
-    setPieceRotation(Rotations.DEG_0);
-    setPieceFlipped(false);
+    // No need to reset rotation/flip - each piece keeps its own state
   };
 
   const handleRotate = () => {
-    setPieceRotation(rotateClockwise(pieceRotation));
+    if (!selectedPiece) return;
+    const currentRotation =
+      pieceTransformations[selectedPiece.piece_id]?.rotation ?? Rotations.DEG_0;
+    const newRotation = rotateClockwise(currentRotation);
+
+    setPieceTransformations((prev) => ({
+      ...prev,
+      [selectedPiece.piece_id]: {
+        rotation: newRotation,
+        flipped: prev[selectedPiece.piece_id]?.flipped ?? false,
+      },
+    }));
   };
 
   const handleFlip = () => {
-    setPieceFlipped(!pieceFlipped);
-  };
+    if (!selectedPiece) return;
+    const currentFlipped = pieceTransformations[selectedPiece.piece_id]?.flipped ?? false;
 
-  const handleRemoveFromPreview = () => {
-    setSelectedPiece(null);
-    setPieceRotation(Rotations.DEG_0);
-    setPieceFlipped(false);
+    setPieceTransformations((prev) => ({
+      ...prev,
+      [selectedPiece.piece_id]: {
+        rotation: prev[selectedPiece.piece_id]?.rotation ?? Rotations.DEG_0,
+        flipped: !currentFlipped,
+      },
+    }));
   };
 
   const handleBoardClick = async (x: number, y: number) => {
@@ -136,8 +171,13 @@ export function KanoodleGameScreen() {
     );
 
     if (success) {
-      // Clear selection after successful placement
-      handleRemoveFromPreview();
+      // Clear the transformation for this piece after placement
+      setPieceTransformations((prev) => {
+        const newTransformations = { ...prev };
+        delete newTransformations[selectedPiece.piece_id];
+        return newTransformations;
+      });
+      // Keep piece selected - don't deselect
     }
   };
 
@@ -217,7 +257,7 @@ export function KanoodleGameScreen() {
             </div>
             <div className="bg-[#000000] border-2 border-[#A4A0E4] px-6 py-3">
               <span className="text-xs text-[#AAFFEE] c64-text-glow font-bold">
-                {text.moves}: {gameState?.moves_count || 0}
+                {text.moves}: {gameState?.placed_piece_ids?.length || 0}
               </span>
             </div>
           </div>
@@ -229,50 +269,33 @@ export function KanoodleGameScreen() {
         </div>
       </div>
 
-      {/* Main game area - 2x2 Grid Layout - C64 Style */}
+      {/* Main game area - 2 Column Layout - C64 Style */}
       <div className="max-w-7xl mx-auto relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top Left: Piece Spawn */}
+          {/* Left: Piece Spawn with Controls */}
           <div className="relative">
             <PieceSpawn
               availablePieces={availablePieces}
               placedPieceIds={gameState?.placed_piece_ids || []}
+              selectedPiece={selectedPiece}
+              pieceTransformations={pieceTransformations}
               onPieceSelect={handlePieceSelect}
-            />
-            {/* Arrow pointing right (to Selected Piece) */}
-            <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2">
-              <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">→</div>
-            </div>
-          </div>
-
-          {/* Top Right: Selected Piece Preview */}
-          <div className="relative">
-            <PiecePreview
-              cells={selectedPiece ? gamePieceToCells(selectedPiece) : []}
-              rotation={pieceRotation}
-              flipped={pieceFlipped}
               onRotate={handleRotate}
               onFlip={handleFlip}
-              onRemove={handleRemoveFromPreview}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             />
-            {/* Arrow pointing down (to Board) */}
-            <div className="hidden lg:block absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-              <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">↓</div>
-            </div>
           </div>
 
-          {/* Bottom Left: Target Pattern */}
-          <div>
+          {/* Right: Game Boards */}
+          <div className="space-y-6">
+            {/* Target Pattern */}
             <TargetBoard
               targetSolution={currentLevel?.solution || new Array(16).fill(0)}
               cellSize={50}
             />
-          </div>
 
-          {/* Bottom Right: Game Board */}
-          <div>
+            {/* Game Board */}
             <div className="c64-border bg-[#6C5EB5] p-4">
               {/* Header - C64 Style */}
               <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-4">
@@ -313,7 +336,8 @@ export function KanoodleGameScreen() {
       </div>
 
       {/* Success Modal - C64 Style */}
-      {showSuccess && (
+      {/* TODO: Re-enable when contract emits completion events */}
+      {false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm">
           <div className="relative c64-border bg-[#6C5EB5] p-6 max-w-md w-full mx-4">
             {/* Title bar */}
@@ -329,7 +353,7 @@ export function KanoodleGameScreen() {
               </pre>
               <div className="bg-[#000000] border-2 border-[#A4A0E4] px-4 py-3 mb-8">
                 <span className="text-[#EEEE77] c64-text-glow text-sm">
-                  {text.moves}: {gameState?.moves_count}
+                  {text.moves}: {gameState?.placed_piece_ids?.length || 0}
                 </span>
               </div>
               <button

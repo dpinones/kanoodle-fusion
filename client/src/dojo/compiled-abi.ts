@@ -1,4 +1,5 @@
-// This file is auto-generated from compiled-abi.json
+// This file is auto-generated from manifest
+// Updated to match new contract structure
 // Do not edit manually
 
 export const compiledAbi = {
@@ -12,7 +13,7 @@ export const compiledAbi = {
        "type":"interface",
        "name":"dojo::contract::interface::IContract",
        "items":[
-          
+
        ]
     },
     {
@@ -46,7 +47,7 @@ export const compiledAbi = {
              "type":"function",
              "name":"dojo_name",
              "inputs":[
-                
+
              ],
              "outputs":[
                 {
@@ -61,10 +62,10 @@ export const compiledAbi = {
        "type":"function",
        "name":"dojo_init",
        "inputs":[
-          
+
        ],
        "outputs":[
-          
+
        ],
        "state_mutability":"external"
     },
@@ -72,34 +73,6 @@ export const compiledAbi = {
        "type":"impl",
        "name":"KanoodleSystemImpl",
        "interface_name":"kanoodle_fusion::systems::kanoodle_fusion_system::IKanoodleSystem"
-    },
-    {
-       "type":"struct",
-       "name":"core::array::Span::<core::integer::u8>",
-       "members":[
-          {
-             "name":"snapshot",
-             "type":"@core::array::Array::<core::integer::u8>"
-          }
-       ]
-    },
-    {
-       "type":"struct",
-       "name":"kanoodle_fusion::models::Level",
-       "members":[
-          {
-             "name":"level_id",
-             "type":"core::integer::u8"
-          },
-          {
-             "name":"solution",
-             "type":"core::array::Span::<core::integer::u8>"
-          },
-          {
-             "name":"allowed_pieces",
-             "type":"core::array::Span::<core::integer::u8>"
-          }
-       ]
     },
     {
        "type":"enum",
@@ -112,6 +85,16 @@ export const compiledAbi = {
           {
              "name":"True",
              "type":"()"
+          }
+       ]
+    },
+    {
+       "type":"struct",
+       "name":"core::array::Span::<core::integer::u8>",
+       "members":[
+          {
+             "name":"snapshot",
+             "type":"@core::array::Array::<core::integer::u8>"
           }
        ]
     },
@@ -138,22 +121,6 @@ export const compiledAbi = {
           {
              "name":"placed_piece_ids",
              "type":"core::array::Span::<core::integer::u8>"
-          },
-          {
-             "name":"pieces_count",
-             "type":"core::integer::u8"
-          },
-          {
-             "name":"is_solved",
-             "type":"core::bool"
-          },
-          {
-             "name":"moves_count",
-             "type":"core::integer::u32"
-          },
-          {
-             "name":"timestamp",
-             "type":"core::integer::u64"
           }
        ]
     },
@@ -2134,8 +2101,8 @@ export const compiledAbi = {
     },
     "contracts": [
       {
-        "address": "0x6f515278735e5c473c583267d8511724fca69d08cfa5baa69acb16d42aba1cc",
-        "class_hash": "0xd0c00a439c26d91090186336a4e0f86236ed4071440de6b4f9c906c3e431a2",
+        "address": "0x38630f3e6d4480299a6db0908ab403e75d2c689a4de572d064bc1da77deda04",
+        "class_hash": "0x7ca980e30830ca24a06f3300b12398df6b4997abb00f3db751cf8d7d12a8687",
         "abi": [
           {
             "type": "impl",

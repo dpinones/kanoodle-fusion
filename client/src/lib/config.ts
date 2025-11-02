@@ -26,8 +26,8 @@ export const SEPOLIA_URL = "https://api.cartridge.gg/x/starknet/sepolia";
 export const MAINNET_CHAIN_ID = constants.StarknetChainId.SN_MAIN;
 export const MAINNET_URL = "https://api.cartridge.gg/x/starknet/mainnet";
 
-export const SLOT_CHAIN_ID = "0x57505f4b414e4f4f444c455f465553494f4e";
-export const SLOT_URL = "https://api.cartridge.gg/x/kanoodle-fusion/katana";
+export const SLOT_CHAIN_ID = "0x57505f4b414e4f4f444c455f465553494f4e5f47414d45";
+export const SLOT_URL = "https://api.cartridge.gg/x/kanoodle-fusion-game/katana";
 
 // ============================================================================
 // MANIFEST SELECTION

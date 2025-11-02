@@ -47,7 +47,7 @@ export const ColorHex: Record<ColorValue, string> = {
   [Colors.BLUE]: '#0088FF',        // Light Blue (C64)
   [Colors.GREEN]: '#00CC55',       // Green (C64)
   [Colors.ORANGE]: '#DD8855',      // Orange (C64)
-  [Colors.PURPLE]: '#CC44CC',      // Purple (C64)
+  [Colors.PURPLE]: '#8c28d8',      // Purple (C64)
   [Colors.NEUTRAL]: '#BBBBBB',     // Light Grey (C64)
 };
 
@@ -58,7 +58,7 @@ export interface PieceCell {
   color: ColorValue;
 }
 
-// Game piece definition (from Dojo get_piece_definition)
+// Game piece definition (matches Dojo contract structure)
 export interface GamePiece {
   piece_id: number;
   size: number; // Number of cells (1-4)
@@ -139,16 +139,13 @@ export interface GamePlacedPiece {
 }
 
 // Main game state (from Dojo get_game_state)
+// Updated to match new simplified contract model
 export interface KanoodleGame {
   game_id: number;
   player: string;
   level_id: number;
   current_solution: number[];  // 16 cells (4x4) with current colors after mixing
   placed_piece_ids: number[];  // List of piece IDs that have been placed
-  pieces_count: number;
-  is_solved: boolean;
-  moves_count: number;
-  timestamp: number;
 }
 
 // Player statistics

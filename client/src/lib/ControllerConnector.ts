@@ -24,11 +24,6 @@ const policies: SessionPolicies = {
             entrypoint: "place_piece",
             description: "Place a piece on the board",
           },
-          {
-            name: "remove_piece",
-            entrypoint: "remove_piece",
-            description: "Remove a piece from the board",
-          },
         ],
       },
     } : {}),

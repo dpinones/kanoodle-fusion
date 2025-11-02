@@ -42,17 +42,19 @@ export function PiecePreview({
         <span className="text-[10px] text-black font-bold">SELECTED PIECE</span>
       </div>
 
-      {/* Piece display area - C64 Style */}
-      <div className="bg-[#000000] p-6 mb-4 min-h-[200px] flex items-center justify-center border-2 border-[#A4A0E4]">
+      {/* Piece display area - C64 Style - Fixed size container */}
+      <div className="bg-[#000000] p-6 mb-4 flex items-center justify-center border-2 border-[#A4A0E4]" style={{ width: '100%', height: '240px' }}>
         {cells.length > 0 ? (
-          <Piece
-            cells={transformedCells}
-            cellSize={cellSize}
-            showGrid={true}
-            draggable={true}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-          />
+          <div className="flex items-center justify-center" style={{ width: '200px', height: '200px' }}>
+            <Piece
+              cells={transformedCells}
+              cellSize={cellSize}
+              showGrid={true}
+              draggable={true}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+            />
+          </div>
         ) : (
           <div className="text-[#777777] text-center text-[10px]">
             NO PIECE

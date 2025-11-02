@@ -1,10 +1,9 @@
 use starknet::ContractAddress;
-use crate::models::{GamePiece, GameStats, KanoodleGame, Level};
+use crate::models::KanoodleGame;
 
 #[starknet::interface]
 pub trait IKanoodleSystem<T> {
     fn start_game(ref self: T, player: ContractAddress, level_id: u8) -> u32;
-    fn get_level(self: @T, level_id: u8) -> Level;
     fn place_piece(
         ref self: T,
         game_id: u32,
@@ -15,18 +14,15 @@ pub trait IKanoodleSystem<T> {
         rotation: u8,
         flipped: bool,
     ) -> bool;
-    fn remove_piece(ref self: T, game_id: u32, player: ContractAddress, piece_id: u8) -> bool;
-    fn check_solution(ref self: T, game_id: u32, player: ContractAddress) -> bool;
+    fn reset(ref self: T, game_id: u32) -> bool;
     fn get_game_state(self: @T, game_id: u32, player: ContractAddress) -> KanoodleGame;
-    fn get_player_stats(self: @T, player: ContractAddress) -> GameStats;
-    fn get_piece_definition(self: @T, piece_id: u8) -> GamePiece;
 }
 
 #[dojo::contract]
 pub mod kanoodle_fusion_system {
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use starknet::{ContractAddress, get_block_timestamp};
-    use crate::models::{GamePiece, GamePlacedPiece, GameStats, KanoodleGame, Level, colors};
+    use starknet::ContractAddress;
+    use crate::models::{GamePiece, GamePlacedPiece, KanoodleGame, colors};
     use crate::store::StoreTrait;
     use super::IKanoodleSystem;
 
@@ -383,10 +379,6 @@ pub mod kanoodle_fusion_system {
                 level_id,
                 current_solution: empty_solution.span(),
                 placed_piece_ids: array![].span(),
-                pieces_count: 0,
-                is_solved: false,
-                moves_count: 0,
-                timestamp: get_block_timestamp(),
             };
 
             store.set_kanoodle_game(game);
@@ -401,16 +393,8 @@ pub mod kanoodle_fusion_system {
                 piece_id += 1;
             }
 
-            let mut stats = store.get_game_stats(player);
-            stats.games_played += 1;
-            store.set_game_stats(stats);
-
             self.emit(GameStarted { game_id, player });
             game_id
-        }
-
-        fn get_level(self: @ContractState, level_id: u8) -> Level {
-            crate::models::get_level(level_id)
         }
 
         fn place_piece(
@@ -427,27 +411,23 @@ pub mod kanoodle_fusion_system {
             assert(rotation < 4, 'Invalid rotation');
 
             let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
-            let mut game = store.get_kanoodle_game(game_id, player);
-
-            if game.is_solved {
-                return false;
-            }
+            let mut game = store.get_kanoodle_game(game_id);
 
             // Check if piece is allowed for this level
-            // let level = crate::models::get_level(game.level_id);
-            // let mut piece_allowed = false;
-            // let mut i = 0;
-            // loop {
-            //     if i >= level.allowed_pieces.len() {
-            //         break;
-            //     }
-            //     if *level.allowed_pieces.at(i) == piece_id {
-            //         piece_allowed = true;
-            //         break;
-            //     }
-            //     i += 1;
-            // }
-            // assert(piece_allowed, 'Invalid piece_id');
+            let level = crate::models::get_level(game.level_id);
+            let mut piece_allowed = false;
+            let mut i = 0;
+            loop {
+                if i >= level.allowed_pieces.len() {
+                    break;
+                }
+                if *level.allowed_pieces.at(i) == piece_id {
+                    piece_allowed = true;
+                    break;
+                }
+                i += 1;
+            }
+            assert(piece_allowed, 'Invalid piece_id');
 
             // Check if piece already placed
             let existing = store.get_placed_piece(game_id, player, piece_id);
@@ -476,62 +456,48 @@ pub mod kanoodle_fusion_system {
 
             game.placed_piece_ids = new_placed_ids.span();
             game.current_solution = new_solution;
-            game.pieces_count += 1;
-            game.moves_count += 1;
             store.set_kanoodle_game(game);
 
             self.emit(PiecePlaced { game_id, player, piece_id });
+
+            // Check if the level is now solved
+            self.check_solution(ref store, game_id, player);
+
             true
         }
 
-        fn remove_piece(
-            ref self: ContractState, game_id: u32, player: ContractAddress, piece_id: u8,
-        ) -> bool {
+        fn reset(ref self: ContractState, game_id: u32) -> bool {
             let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
-            let mut game = store.get_kanoodle_game(game_id, player);
+            let mut game = store.get_kanoodle_game(game_id);
 
-            if game.is_solved {
-                return false;
-            }
-
-            let existing = store.get_placed_piece(game_id, player, piece_id);
-            if existing.x == 255 {
-                return false; // Not placed
-            }
-
-            store.delete_placed_piece(game_id, player, piece_id);
-
-            // Update placed_piece_ids - remove this piece_id
-            let mut new_placed_ids = array![];
-            let mut i = 0;
-            loop {
-                if i >= game.placed_piece_ids.len() {
-                    break;
-                }
-                let current_id = *game.placed_piece_ids.at(i);
-                if current_id != piece_id {
-                    new_placed_ids.append(current_id);
-                }
-                i += 1;
-            }
-
-            // Recalculate current_solution based on remaining placed pieces
-            let new_solution = rebuild_current_solution(game_id, player, ref store);
-
-            game.placed_piece_ids = new_placed_ids.span();
-            game.current_solution = new_solution;
-            if game.pieces_count > 0 {
-                game.pieces_count -= 1;
-            }
+            // Reset the game state to empty
+            let empty_solution = array![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            game.current_solution = empty_solution.span();
+            game.placed_piece_ids = array![].span();
             store.set_kanoodle_game(game);
 
-            self.emit(PieceRemoved { game_id, player, piece_id });
             true
         }
 
-        fn check_solution(ref self: ContractState, game_id: u32, player: ContractAddress) -> bool {
+        fn get_game_state(
+            self: @ContractState, game_id: u32, player: ContractAddress,
+        ) -> KanoodleGame {
             let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
-            let game = store.get_kanoodle_game(game_id, player);
+            store.get_kanoodle_game(game_id)
+        }
+    }
+
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        /// Check if the current solution matches the level's target solution
+        /// Returns true if solved, false otherwise
+        fn check_solution(
+            ref self: ContractState,
+            ref store: crate::store::Store,
+            game_id: u32,
+            player: ContractAddress
+        ) -> bool {
+            let game = store.get_kanoodle_game(game_id);
 
             // Get level configuration
             let level = crate::models::get_level(game.level_id);
@@ -555,44 +521,36 @@ pub mod kanoodle_fusion_system {
                 };
             }
 
-            let already_solved = game.is_solved;
-            let moves = game.moves_count;
+            if is_solved {
+                // Calculate moves (number of pieces placed)
+                let moves = game.placed_piece_ids.len();
 
-            if is_solved && !already_solved {
-                // Need to get the game again to modify it
-                let mut game_to_update = store.get_kanoodle_game(game_id, player);
-                game_to_update.is_solved = true;
-                store.set_kanoodle_game(game_to_update);
+                // Emit event
+                self.emit(GameSolved { game_id, player, moves: moves });
 
-                let mut stats = store.get_game_stats(player);
-                stats.games_solved += 1;
-                stats.total_moves += moves;
-                if stats.best_moves == 0 || moves < stats.best_moves {
-                    stats.best_moves = moves;
+                // Advance to next level if not at max level (50)
+                if game.level_id < 50 {
+                    let mut updated_game = game;
+                    updated_game.level_id += 1;
+                    // Reset the board for the new level
+                    let empty_solution = array![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    updated_game.current_solution = empty_solution.span();
+                    updated_game.placed_piece_ids = array![].span();
+                    store.set_kanoodle_game(updated_game);
+
+                    // Clear all placed pieces
+                    let mut piece_id: u8 = 1;
+                    loop {
+                        if piece_id > 13 {
+                            break;
+                        }
+                        store.delete_placed_piece(game_id, player, piece_id);
+                        piece_id += 1;
+                    }
                 }
-                store.set_game_stats(stats);
-
-                self.emit(GameSolved { game_id, player, moves });
             }
 
             is_solved
-        }
-
-        fn get_game_state(
-            self: @ContractState, game_id: u32, player: ContractAddress,
-        ) -> KanoodleGame {
-            let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
-            store.get_kanoodle_game(game_id, player)
-        }
-
-        fn get_player_stats(self: @ContractState, player: ContractAddress) -> GameStats {
-            let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
-            store.get_game_stats(player)
-        }
-
-        fn get_piece_definition(self: @ContractState, piece_id: u8) -> GamePiece {
-            assert(piece_id >= 1 && piece_id <= 13, 'Invalid piece_id');
-            crate::models::get_piece_definition(piece_id)
         }
     }
 }

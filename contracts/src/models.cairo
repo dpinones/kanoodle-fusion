@@ -826,10 +826,9 @@ pub fn get_level(level_id: u8) -> Level {
         Level {
             level_id: 50,
             solution: array![
-                colors::RED, colors::RED, colors::BLUE, colors::BLUE, 
-                colors::PURPLE, colors::BLUE, colors::BLUE, colors::BLUE, 
-                colors::ORANGE, colors::YELLOW, colors::YELLOW, colors::YELLOW, 
-                colors::ORANGE, colors::ORANGE, colors::ORANGE, colors::RED,
+                colors::RED, colors::RED, colors::BLUE, colors::BLUE, colors::PURPLE, colors::BLUE,
+                colors::BLUE, colors::BLUE, colors::ORANGE, colors::YELLOW, colors::YELLOW,
+                colors::YELLOW, colors::ORANGE, colors::ORANGE, colors::ORANGE, colors::RED,
             ]
                 .span(),
             allowed_pieces: array![
@@ -1110,24 +1109,8 @@ pub struct GamePlacedPiece {
 pub struct KanoodleGame {
     #[key]
     pub game_id: u32,
-    #[key]
     pub player: ContractAddress,
     pub level_id: u8, // References the level (use get_level() to get solution and allowed pieces)
     pub current_solution: Span<u8>, // 16 cells (4x4) with current colors after mixing
     pub placed_piece_ids: Span<u8>, // List of piece IDs that have been placed
-    pub pieces_count: u8, // Number of pieces placed (= placed_piece_ids.len())
-    pub is_solved: bool,
-    pub moves_count: u32,
-    pub timestamp: u64,
-}
-
-#[derive(Copy, Drop, Serde, Debug)]
-#[dojo::model]
-pub struct GameStats {
-    #[key]
-    pub player: ContractAddress,
-    pub games_played: u32,
-    pub games_solved: u32,
-    pub best_moves: u32, // Best solution in minimum moves
-    pub total_moves: u32 // Total moves across all games
 }

@@ -139,16 +139,13 @@ export interface GamePlacedPiece {
 }
 
 // Main game state (from Dojo get_game_state)
+// Updated to match new simplified contract model
 export interface KanoodleGame {
   game_id: number;
   player: string;
   level_id: number;
   current_solution: number[];  // 16 cells (4x4) with current colors after mixing
   placed_piece_ids: number[];  // List of piece IDs that have been placed
-  pieces_count: number;
-  is_solved: boolean;
-  moves_count: number;
-  timestamp: number;
 }
 
 // Player statistics

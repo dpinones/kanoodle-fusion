@@ -14,7 +14,12 @@ import { ConnectWallet } from './ConnectWallet';
 import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 import { getKanoodleText } from '../../lib/uiText';
 import { rotateClockwise } from '../../lib/kanoodle/pieceUtils';
-import { gamePieceToCells, Rotations, type GamePiece, type RotationValue } from '../../lib/kanoodle/types';
+import {
+  gamePieceToCells,
+  Rotations,
+  type GamePiece,
+  type RotationValue
+} from '../../lib/kanoodle/types';
 
 export function KanoodleGameScreen() {
   const text = getKanoodleText().game;
@@ -30,7 +35,8 @@ export function KanoodleGameScreen() {
   const [pieceRotation, setPieceRotation] = useState<RotationValue>(Rotations.DEG_0);
   const [pieceFlipped, setPieceFlipped] = useState(false);
   const [availablePieces, setAvailablePieces] = useState<GamePiece[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+  // Success modal is now disabled - will be triggered by contract events
+  // const [showSuccess, setShowSuccess] = useState(false);
 
   const {
     gameState,
@@ -97,11 +103,12 @@ export function KanoodleGameScreen() {
   }, [currentLevel, getPieceDefinition]);
 
   // Check if level is complete
+  // NOTE: Level completion should be checked by the contract
+  // For now, we'll rely on contract events or manual checking
   useEffect(() => {
-    if (gameState?.is_solved && !showSuccess) {
-      setShowSuccess(true);
-    }
-  }, [gameState?.is_solved]);
+    // TODO: Listen to contract events for game completion
+    // For now, level completion UI is disabled
+  }, []);
 
   // Handlers
   const handlePieceSelect = (piece: GamePiece) => {
@@ -217,7 +224,7 @@ export function KanoodleGameScreen() {
             </div>
             <div className="bg-[#000000] border-2 border-[#A4A0E4] px-6 py-3">
               <span className="text-xs text-[#AAFFEE] c64-text-glow font-bold">
-                {text.moves}: {gameState?.moves_count || 0}
+                {text.moves}: {gameState?.placed_piece_ids?.length || 0}
               </span>
             </div>
           </div>
@@ -313,7 +320,8 @@ export function KanoodleGameScreen() {
       </div>
 
       {/* Success Modal - C64 Style */}
-      {showSuccess && (
+      {/* TODO: Re-enable when contract emits completion events */}
+      {false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm">
           <div className="relative c64-border bg-[#6C5EB5] p-6 max-w-md w-full mx-4">
             {/* Title bar */}
@@ -329,7 +337,7 @@ export function KanoodleGameScreen() {
               </pre>
               <div className="bg-[#000000] border-2 border-[#A4A0E4] px-4 py-3 mb-8">
                 <span className="text-[#EEEE77] c64-text-glow text-sm">
-                  {text.moves}: {gameState?.moves_count}
+                  {text.moves}: {gameState?.placed_piece_ids?.length || 0}
                 </span>
               </div>
               <button

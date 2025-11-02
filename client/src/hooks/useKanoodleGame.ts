@@ -17,7 +17,7 @@ import type {
 import { getLevel } from '../lib/kanoodle/levels';
 import { getPieceDefinition as getLocalPieceDefinition } from '../lib/kanoodle/pieces';
 
-// Use ABI from manifest
+// Use ABI from manifest - Updated to match actual contract functions
 const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
   {
     name: 'start_game',
@@ -45,12 +45,10 @@ const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
     state_mutability: 'external',
   },
   {
-    name: 'remove_piece',
+    name: 'reset',
     type: 'function',
     inputs: [
       { name: 'game_id', type: 'core::integer::u32' },
-      { name: 'player', type: 'core::starknet::contract_address::ContractAddress' },
-      { name: 'piece_id', type: 'core::integer::u8' },
     ],
     outputs: [{ type: 'core::bool' }],
     state_mutability: 'external',
@@ -63,27 +61,6 @@ const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
       { name: 'player', type: 'core::starknet::contract_address::ContractAddress' },
     ],
     outputs: [{ type: 'KanoodleGame' }],
-    state_mutability: 'view',
-  },
-  {
-    name: 'get_level',
-    type: 'function',
-    inputs: [{ name: 'level_id', type: 'core::integer::u8' }],
-    outputs: [{ type: 'Level' }],
-    state_mutability: 'view',
-  },
-  {
-    name: 'get_piece_definition',
-    type: 'function',
-    inputs: [{ name: 'piece_id', type: 'core::integer::u8' }],
-    outputs: [{ type: 'GamePiece' }],
-    state_mutability: 'view',
-  },
-  {
-    name: 'get_player_stats',
-    type: 'function',
-    inputs: [{ name: 'player', type: 'core::starknet::contract_address::ContractAddress' }],
-    outputs: [{ type: 'GameStats' }],
     state_mutability: 'view',
   },
 ];
@@ -105,7 +82,8 @@ interface UseKanoodleGameReturn {
     rotation: RotationValue,
     flipped: boolean
   ) => Promise<boolean>;
-  removePiece: (pieceId: number) => Promise<boolean>;
+  removePiece: (pieceId: number) => Promise<boolean>; // Deprecated - use resetGame instead
+  resetGame: () => Promise<boolean>;
   refreshGameState: () => Promise<void>;
   loadLevel: (levelId: number) => Promise<void>;
   getPieceDefinition: (pieceId: number) => Promise<GamePiece | null>;
@@ -278,9 +256,22 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
   );
 
   // Remove a piece from the board
+  // NOTE: remove_piece function no longer exists in contract
+  // The new contract only has reset() which resets the entire game
   const removePiece = useCallback(
-    async (pieceId: number): Promise<boolean> => {
-      if (!contract || !address || !gameId) {
+    async (_pieceId: number): Promise<boolean> => {
+      console.warn('removePiece called but remove_piece() no longer exists in contract');
+      console.warn('Use reset() to reset the entire game instead');
+      setError('Remove piece not supported. Use reset to start over.');
+      return false;
+    },
+    []
+  );
+
+  // Reset the entire game
+  const resetGame = useCallback(
+    async (): Promise<boolean> => {
+      if (!account || !gameId) {
         setError('Game not initialized');
         return false;
       }
@@ -289,23 +280,33 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
       setError(null);
 
       try {
-        const result = await contract.remove_piece(gameId, address, pieceId);
-        const success = Boolean(result);
+        console.log('Resetting game:', gameId);
 
-        if (success) {
-          await refreshGameState();
-        }
+        const tx = await account.execute({
+          contractAddress: KANOODLE_SYSTEM_ADDRESS,
+          entrypoint: 'reset',
+          calldata: [gameId],
+        });
 
-        return success;
-      } catch (err) {
-        console.error('Failed to remove piece:', err);
-        setError('Failed to remove piece');
+        console.log('Reset transaction sent:', tx.transaction_hash);
+
+        await account.waitForTransaction(tx.transaction_hash, {
+          retryInterval: 100,
+        });
+
+        console.log('Game reset successfully');
+        await refreshGameState();
+        return true;
+      } catch (err: any) {
+        console.error('Failed to reset game:', err);
+        const errorMessage = err?.message || 'Failed to reset game';
+        setError(errorMessage);
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [contract, address, gameId]
+    [account, gameId]
   );
 
   // Refresh game state from contract
@@ -382,20 +383,21 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
   );
 
   // Load player stats on mount
+  // NOTE: get_player_stats is no longer available in the contract
+  // Stats would need to be computed client-side or from events
   useEffect(() => {
-    if (!contract || !address) return;
+    if (!address) return;
 
-    const loadStats = async () => {
-      try {
-        const stats = await contract.get_player_stats(address);
-        setPlayerStats(stats as GameStats);
-      } catch (err) {
-        console.error('Failed to load player stats:', err);
-      }
-    };
-
-    loadStats();
-  }, [contract, address]);
+    // TODO: Implement client-side stats tracking or fetch from events
+    // For now, we just set empty stats
+    setPlayerStats({
+      player: address,
+      games_played: 0,
+      games_solved: 0,
+      best_moves: 0,
+      total_moves: 0,
+    });
+  }, [address]);
 
   // Refresh game state when gameId changes
   useEffect(() => {
@@ -413,6 +415,7 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
     startGame,
     placePiece,
     removePiece,
+    resetGame,
     refreshGameState,
     loadLevel,
     getPieceDefinition,

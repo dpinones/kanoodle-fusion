@@ -1,7 +1,7 @@
 use dojo::model::ModelStorage;
 use dojo::world::WorldStorage;
 use starknet::ContractAddress;
-use crate::models::{GamePlacedPiece, GameStats, KanoodleGame};
+use crate::models::{GamePlacedPiece, KanoodleGame};
 
 #[derive(Drop)]
 pub struct Store {
@@ -15,20 +15,12 @@ pub impl StoreImpl of StoreTrait {
         Store { world: world }
     }
 
-    fn get_kanoodle_game(ref self: Store, game_id: u32, player: ContractAddress) -> KanoodleGame {
-        self.world.read_model((game_id, player))
+    fn get_kanoodle_game(ref self: Store, game_id: u32) -> KanoodleGame {
+        self.world.read_model(game_id)
     }
 
     fn set_kanoodle_game(ref self: Store, game: KanoodleGame) {
         self.world.write_model(@game)
-    }
-
-    fn get_game_stats(ref self: Store, player: ContractAddress) -> GameStats {
-        self.world.read_model(player)
-    }
-
-    fn set_game_stats(ref self: Store, stats: GameStats) {
-        self.world.write_model(@stats)
     }
 
     fn get_placed_piece(

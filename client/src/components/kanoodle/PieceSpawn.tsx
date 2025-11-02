@@ -170,7 +170,7 @@ export function PieceSpawn({
 
             {/* Drag hint */}
             <div className="text-center text-[8px] text-[#AAFFEE]">
-              DRAG TO BOARD OR CLICK CELL
+              
             </div>
           </>
         ) : (

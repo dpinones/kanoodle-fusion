@@ -113,7 +113,6 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                   style={{
                     backgroundColor: colorPalette[cell.targetColor],
                     opacity: 0.3,
-                    border: '2px solid #A4A0E4',
                   }}
                 >
                   {/* Target color symbol (faded) */}
@@ -133,11 +132,6 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                     className="absolute inset-0 transition-all duration-100 flex items-center justify-center"
                     style={{
                       backgroundColor: colorPalette[cell.currentColor],
-                      border: showError
-                        ? '3px solid #880000'
-                        : cell.isCorrect
-                        ? '3px solid #00CC55'
-                        : '2px solid #333333',
                       boxShadow: showError
                         ? 'inset 0 0 8px rgba(136, 0, 0, 0.8), 0 0 8px #880000'
                         : cell.isCorrect

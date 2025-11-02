@@ -39,14 +39,14 @@ export const TargetBoard = memo(function TargetBoard({
   const colorPalette = colorblindMode ? ColorblindHex : ColorHex;
 
   return (
-    <div className="c64-border bg-[#6C5EB5] p-4">
+    <div className="c64-border bg-[#6C5EB5] p-3 flex flex-col h-full">
       {/* Header - C64 Style */}
-      <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-4">
+      <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-3">
         <span className="text-[10px] text-black font-bold">TARGET PATTERN</span>
       </div>
 
       {/* Board container - C64 Style */}
-      <div className="flex items-center justify-center p-2">
+      <div className="flex items-center justify-center p-2 flex-1">
         <div
           className="relative bg-[#000000] border-2 border-[#A4A0E4]"
           style={{
@@ -99,8 +99,8 @@ export const TargetBoard = memo(function TargetBoard({
       </div>
 
       {/* Label - C64 Style */}
-      <div className="mt-4 text-center text-[8px] text-[#BBBBBB]">
-        MATCH THIS PATTERN
+      <div className="mt-3 text-center text-[8px] text-[#BBBBBB]">
+        
       </div>
     </div>
   );

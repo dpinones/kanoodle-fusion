@@ -4,7 +4,7 @@
  */
 
 import { memo, useState, useEffect } from 'react';
-import { ColorHex, type ColorValue, type BoardCell } from '../../lib/kanoodle/types';
+import { ColorHex, type ColorValue, type BoardCell, type PieceCell } from '../../lib/kanoodle/types';
 import { ColorblindHex, ColorSymbol } from '../../lib/kanoodle/colorblindColors';
 import { BOARD_SIZE } from '../../lib/kanoodle/config';
 
@@ -14,7 +14,11 @@ interface KanoodleBoardProps {
   cellSize?: number;
   onCellClick?: (x: number, y: number) => void;
   onCellDrop?: (x: number, y: number) => void;
+  onBoardDrop?: (e: React.DragEvent) => void;
+  onBoardDragOver?: (e: React.DragEvent) => void;
   highlightErrors?: boolean;
+  previewPiece?: PieceCell[] | null; // Piece to preview during drag
+  previewPosition?: { x: number; y: number } | null; // Position of preview piece
 }
 
 export const KanoodleBoard = memo(function KanoodleBoard({
@@ -23,7 +27,11 @@ export const KanoodleBoard = memo(function KanoodleBoard({
   cellSize = 60,
   onCellClick,
   onCellDrop,
+  onBoardDrop,
+  onBoardDragOver,
   highlightErrors = true,
+  previewPiece = null,
+  previewPosition = null,
 }: KanoodleBoardProps) {
   const [colorblindMode, setColorblindMode] = useState(() => {
     const saved = localStorage.getItem('colorblindMode');
@@ -75,11 +83,33 @@ export const KanoodleBoard = memo(function KanoodleBoard({
           width: `${boardWidth}px`,
           height: `${boardHeight}px`,
         }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (onBoardDragOver) {
+            onBoardDragOver(e);
+          }
+        }}
+        onDragLeave={() => {
+          // Clear preview when leaving the board
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          if (onBoardDrop) {
+            onBoardDrop(e);
+          }
+        }}
       >
         {/* Grid cells */}
         <div className="relative w-full h-full">
           {cells.map((cell, index) => {
             const showError = highlightErrors && !cell.isCorrect && cell.currentColor !== 0;
+
+            // Check if this cell is part of the preview
+            const isPreview = previewPiece && previewPosition &&
+              previewPiece.some(pieceCell =>
+                previewPosition.x + pieceCell.x === cell.x &&
+                previewPosition.y + pieceCell.y === cell.y
+              );
 
             return (
               <div
@@ -96,14 +126,12 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                 onClick={() => onCellClick?.(cell.x, cell.y)}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  e.currentTarget.style.opacity = '0.7';
                 }}
                 onDragLeave={(e) => {
-                  e.currentTarget.style.opacity = '1';
+                  e.preventDefault();
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  e.currentTarget.style.opacity = '1';
                   onCellDrop?.(cell.x, cell.y);
                 }}
               >
@@ -111,18 +139,22 @@ export const KanoodleBoard = memo(function KanoodleBoard({
                 <div
                   className="w-full h-full flex items-center justify-center"
                   style={{
-                    backgroundColor: cell.currentColor !== 0
+                    backgroundColor: isPreview
+                      ? '#888888' // Gray preview
+                      : cell.currentColor !== 0
                       ? colorPalette[cell.currentColor]
                       : colorPalette[cell.targetColor],
-                    opacity: cell.currentColor !== 0 ? 1 : 0.3,
+                    opacity: isPreview ? 0.6 : cell.currentColor !== 0 ? 1 : 0.3,
                     border: '2px solid #333333',
                     boxShadow: showError
                       ? 'inset 0 0 8px rgba(136, 0, 0, 0.8), 0 0 8px #880000'
+                      : isPreview
+                      ? 'inset 2px 2px 0 rgba(255, 255, 255, 0.4), inset -2px -2px 0 rgba(0, 0, 0, 0.4)'
                       : 'inset 2px 2px 0 rgba(255, 255, 255, 0.2), inset -2px -2px 0 rgba(0, 0, 0, 0.3)',
                   }}
                 >
                   {/* Symbol in colorblind mode */}
-                  {colorblindMode && (cell.currentColor !== 0 ? cell.currentColor : cell.targetColor) !== 0 && (
+                  {!isPreview && colorblindMode && (cell.currentColor !== 0 ? cell.currentColor : cell.targetColor) !== 0 && (
                     <span
                       className="text-black font-bold drop-shadow-sm"
                       style={{

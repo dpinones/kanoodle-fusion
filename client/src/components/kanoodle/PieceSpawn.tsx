@@ -100,26 +100,83 @@ export function PieceSpawn({
               }}
               onDragStart={(e) => {
                 if (isSelected && !isPlaced) {
-                  // Get the piece element
+                  // Create a custom drag image at board cell size (45px)
+                  const boardCellSize = 45;
+
+                  // Get the piece element bounds to calculate mouse offset
                   const pieceElement = pieceRefs.current[piece.piece_id];
-                  if (pieceElement) {
-                    // Create a custom drag image with only the piece shape (no container)
-                    const dragImage = pieceElement.cloneNode(true) as HTMLElement;
-                    dragImage.style.position = 'absolute';
-                    dragImage.style.top = '-1000px';
-                    document.body.appendChild(dragImage);
+                  const sourceCellSize = cellSize; // Current display size (35px)
 
-                    // Set the custom drag image
-                    e.dataTransfer.setDragImage(dragImage,
-                      Math.floor(pieceElement.offsetWidth / 2),
-                      Math.floor(pieceElement.offsetHeight / 2)
-                    );
+                  // Calculate mouse position relative to the piece spawn container
+                  const containerRect = e.currentTarget.getBoundingClientRect();
+                  const mouseXInContainer = e.clientX - containerRect.left;
+                  const mouseYInContainer = e.clientY - containerRect.top;
 
-                    // Clean up the temporary element after drag starts
-                    setTimeout(() => {
-                      document.body.removeChild(dragImage);
-                    }, 0);
-                  }
+                  // Convert mouse position to cell coordinates in source piece
+                  const mouseCellX = Math.floor(mouseXInContainer / sourceCellSize);
+                  const mouseCellY = Math.floor(mouseYInContainer / sourceCellSize);
+
+                  // Store the offset in dataTransfer for later use
+                  e.dataTransfer.setData('offsetX', mouseCellX.toString());
+                  e.dataTransfer.setData('offsetY', mouseCellY.toString());
+
+                  // Create a container for the scaled piece
+                  const dragImageContainer = document.createElement('div');
+                  dragImageContainer.style.position = 'absolute';
+                  dragImageContainer.style.top = '-1000px';
+                  dragImageContainer.style.pointerEvents = 'none';
+                  document.body.appendChild(dragImageContainer);
+
+                  // Render the piece at board size
+                  const scaledPieceHTML = document.createElement('div');
+                  const minX = Math.min(...cells.map(c => Number(c.x)));
+                  const minY = Math.min(...cells.map(c => Number(c.y)));
+                  const maxX = Math.max(...cells.map(c => Number(c.x)));
+                  const maxY = Math.max(...cells.map(c => Number(c.y)));
+                  const width = (maxX - minX + 1) * boardCellSize;
+                  const height = (maxY - minY + 1) * boardCellSize;
+
+                  scaledPieceHTML.style.width = `${width}px`;
+                  scaledPieceHTML.style.height = `${height}px`;
+                  scaledPieceHTML.style.position = 'relative';
+
+                  // Clone each cell at board size
+                  cells.forEach((cell) => {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.style.position = 'absolute';
+                    cellDiv.style.left = `${(Number(cell.x) - minX) * boardCellSize}px`;
+                    cellDiv.style.top = `${(Number(cell.y) - minY) * boardCellSize}px`;
+                    cellDiv.style.width = `${boardCellSize}px`;
+                    cellDiv.style.height = `${boardCellSize}px`;
+
+                    // Get color from piece element
+                    if (pieceElement) {
+                      const cellElements = pieceElement.querySelectorAll('div[style*="background"]');
+                      const sourceCellElement = cellElements[cells.indexOf(cell)] as HTMLElement;
+                      if (sourceCellElement) {
+                        cellDiv.style.backgroundColor = sourceCellElement.style.backgroundColor;
+                        cellDiv.style.border = '2px solid #333333';
+                        cellDiv.style.boxShadow = 'inset 2px 2px 0 rgba(255, 255, 255, 0.3), inset -2px -2px 0 rgba(0, 0, 0, 0.3)';
+                      }
+                    }
+
+                    scaledPieceHTML.appendChild(cellDiv);
+                  });
+
+                  dragImageContainer.appendChild(scaledPieceHTML);
+
+                  // Set the drag image offset to position (0,0) of the piece
+                  // This way, the cursor will indicate where the piece origin will be placed
+                  e.dataTransfer.setDragImage(dragImageContainer,
+                    0,
+                    0
+                  );
+
+                  // Clean up the temporary element after drag starts
+                  setTimeout(() => {
+                    document.body.removeChild(dragImageContainer);
+                  }, 0);
+
                   onDragStart(e);
                 }
               }}

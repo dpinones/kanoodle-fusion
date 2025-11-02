@@ -135,6 +135,26 @@ body.colorblind-mode .c64-rainbow {
   animation: c64-blink 1s step-end infinite;
 }
 
+/* Floating animation for decorative pieces */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 3s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
 /* C64 Button style */
 .c64-button {
   background: #A4A0E4;

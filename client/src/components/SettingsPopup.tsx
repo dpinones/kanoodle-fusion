@@ -2,7 +2,7 @@
  * SettingsPopup Component - Commodore 64 Style
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getKanoodleText } from '../lib/uiText';
 import { audioManager } from '../lib/audioManager';
 import { useLanguage } from '../lib/LanguageContext';
@@ -14,15 +14,19 @@ interface SettingsPopupProps {
 type Language = 'en' | 'es' | 'ja';
 
 export function SettingsPopup({ onClose }: SettingsPopupProps) {
-  const [musicEnabled, setMusicEnabled] = useState(() => {
-    const saved = localStorage.getItem('musicEnabled');
-    return saved ? JSON.parse(saved) : false;
+  const [musicVolume, setMusicVolume] = useState(() => {
+    const saved = localStorage.getItem('musicVolume');
+    return saved ? parseFloat(saved) : 1.0;
   });
 
-  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(() => {
-    const saved = localStorage.getItem('soundEffectsEnabled');
-    return saved ? JSON.parse(saved) : true;
+  const [soundVolume, setSoundVolume] = useState(() => {
+    const saved = localStorage.getItem('soundVolume');
+    return saved ? parseFloat(saved) : 1.0;
   });
+
+  // Refs to track previous values
+  const prevMusicVolumeRef = useRef(musicVolume);
+  const prevSoundVolumeRef = useRef(soundVolume);
 
   const [colorblindMode, setColorblindMode] = useState(() => {
     const saved = localStorage.getItem('colorblindMode');
@@ -36,16 +40,29 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
   const text = getKanoodleText().settings;
 
   useEffect(() => {
-    localStorage.setItem('musicEnabled', JSON.stringify(musicEnabled));
-    audioManager.setMusicEnabled(musicEnabled);
-    console.log(musicEnabled ? '🎵 Music enabled' : '🔇 Music disabled');
-  }, [musicEnabled]);
+    const prevValue = prevMusicVolumeRef.current;
+
+    localStorage.setItem('musicVolume', musicVolume.toString());
+    audioManager.setMusicVolume(musicVolume);
+
+    // Only start/stop music when crossing the 0 threshold
+    if (prevValue === 0 && musicVolume > 0) {
+      audioManager.setMusicEnabled(true);
+    } else if (musicVolume === 0 && prevValue > 0) {
+      audioManager.setMusicEnabled(false);
+    }
+
+    // Update ref for next time
+    prevMusicVolumeRef.current = musicVolume;
+
+    console.log(`🎵 Music volume: ${Math.round(musicVolume * 100)}%`);
+  }, [musicVolume]);
 
   useEffect(() => {
-    localStorage.setItem('soundEffectsEnabled', JSON.stringify(soundEffectsEnabled));
-    audioManager.setSoundEffectsEnabled(soundEffectsEnabled);
-    console.log(soundEffectsEnabled ? '🔔 Sound effects enabled' : '🔕 Sound effects disabled');
-  }, [soundEffectsEnabled]);
+    localStorage.setItem('soundVolume', soundVolume.toString());
+    audioManager.setSoundVolume(soundVolume);
+    console.log(`🔔 Sound volume: ${Math.round(soundVolume * 100)}%`);
+  }, [soundVolume]);
 
   useEffect(() => {
     localStorage.setItem('colorblindMode', JSON.stringify(colorblindMode));
@@ -99,45 +116,54 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
 
         {/* Content */}
         <div className="mt-10 space-y-6">
-          {/* Music Toggle */}
+          {/* Music Volume */}
           <div>
-            <label className="block text-[#AAFFEE] text-xs mb-2 c64-text-glow">
-              ♫ {text.music}
+            <label className="block text-[#AAFFEE] text-xs mb-2 c64-text-glow flex justify-between">
+              <span>♫ {text.music}</span>
+              <span>{Math.round(musicVolume * 100)}%</span>
             </label>
-            <button
-              onClick={() => {
-                audioManager.playButtonClick();
-                setMusicEnabled(!musicEnabled);
-              }}
-              className={`w-full py-3 px-4 text-sm c64-button ${
-                musicEnabled
-                  ? 'bg-[#00CC55] border-[#00B428]'
-                  : 'bg-[#777777] border-[#333333]'
-              }`}
-            >
-              {musicEnabled ? text.on : text.off}
-            </button>
+            <div className="relative">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={musicVolume}
+                onChange={(e) => {
+                  const newVolume = parseFloat(e.target.value);
+                  setMusicVolume(newVolume);
+                }}
+                className="w-full h-8 appearance-none bg-[#000000] border-2 border-[#A4A0E4] cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #00CC55 0%, #00CC55 ${musicVolume * 100}%, #000000 ${musicVolume * 100}%, #000000 100%)`
+                }}
+              />
+            </div>
           </div>
 
-          {/* Sound Effects Toggle */}
+          {/* Sound Effects Volume */}
           <div>
-            <label className="block text-[#AAFFEE] text-xs mb-2 c64-text-glow">
-              ♪ {text.soundEffects}
+            <label className="block text-[#AAFFEE] text-xs mb-2 c64-text-glow flex justify-between">
+              <span>♪ {text.soundEffects}</span>
+              <span>{Math.round(soundVolume * 100)}%</span>
             </label>
-            <button
-              onClick={() => {
-                // Play sound before toggling (so it plays when turning off too)
-                if (soundEffectsEnabled) audioManager.playButtonClick();
-                setSoundEffectsEnabled(!soundEffectsEnabled);
-              }}
-              className={`w-full py-3 px-4 text-sm c64-button ${
-                soundEffectsEnabled
-                  ? 'bg-[#00CC55] border-[#00B428]'
-                  : 'bg-[#777777] border-[#333333]'
-              }`}
-            >
-              {soundEffectsEnabled ? text.on : text.off}
-            </button>
+            <div className="relative">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={soundVolume}
+                onChange={(e) => {
+                  const newVolume = parseFloat(e.target.value);
+                  setSoundVolume(newVolume);
+                }}
+                className="w-full h-8 appearance-none bg-[#000000] border-2 border-[#A4A0E4] cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #00CC55 0%, #00CC55 ${soundVolume * 100}%, #000000 ${soundVolume * 100}%, #000000 100%)`
+                }}
+              />
+            </div>
           </div>
 
           {/* Colorblind Mode Toggle */}

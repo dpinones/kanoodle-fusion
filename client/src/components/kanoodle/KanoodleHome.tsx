@@ -84,17 +84,23 @@ export function KanoodleHome() {
           <pre className="text-[#AAFFEE] c64-text-glow text-xs"></pre>
         </div>
 
-        {/* Game Title - C64 ASCII art style - Smaller */}
+        {/* Game Title - C64 style matching LoginScreen */}
         <div className="text-center mb-3 sm:mb-4">
-          <pre className="text-[#AAFFEE] c64-text-glow text-base sm:text-xl md:text-2xl font-bold leading-tight mb-2">
-{`╔═══════════════════╗
-║  K A N O O D L E  ║
-║   F U S I O N     ║
-╚═══════════════════╝`}
-          </pre>
-          <p className="text-[#EEEE77] text-xs mt-2">
+          <h1
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#AAFFEE] c64-text-glow mb-2 tracking-wider"
+            style={{ fontFamily: 'Press Start 2P, monospace' }}
+          >
+            KANOODLE
+          </h1>
+          <h2
+            className="text-lg sm:text-xl md:text-2xl font-bold text-[#EEEE77] c64-text-glow"
+            style={{ fontFamily: 'Press Start 2P, monospace' }}
+          >
+            FUSION
+          </h2>
+          {/* <p className="text-[#EEEE77] text-xs mt-2">
             PUZZLE LOGIC GAME
-          </p>
+          </p> */}
         </div>
 
         {/* Menu Options - Compact with decorations */}

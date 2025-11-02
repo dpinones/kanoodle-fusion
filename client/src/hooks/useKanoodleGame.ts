@@ -14,6 +14,8 @@ import type {
   GameStats,
   RotationValue,
 } from '../lib/kanoodle/types';
+import { getLevel } from '../lib/kanoodle/levels';
+import { getPieceDefinition as getLocalPieceDefinition } from '../lib/kanoodle/pieces';
 
 // Use ABI from manifest
 const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
@@ -315,7 +317,22 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
 
     try {
       const state = await contract.get_game_state(gameId, address);
-      setGameState(state as KanoodleGame);
+      console.log('=== RAW game state from contract ===');
+      console.log('Full state:', state);
+      console.log('Placed piece IDs raw:', (state as any).placed_piece_ids);
+      console.log('Type of placed_piece_ids:', typeof (state as any).placed_piece_ids);
+      console.log('Is Array?:', Array.isArray((state as any).placed_piece_ids));
+
+      // Convert BigInt values in placed_piece_ids to numbers
+      const processedState = {
+        ...state,
+        placed_piece_ids: Array.isArray((state as any).placed_piece_ids)
+          ? (state as any).placed_piece_ids.map((id: any) => Number(id))
+          : [],
+      };
+
+      console.log('Processed placed_piece_ids:', processedState.placed_piece_ids);
+      setGameState(processedState as KanoodleGame);
     } catch (err) {
       console.error('Failed to get game state:', err);
       setError('Failed to load game state');
@@ -324,17 +341,18 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
     }
   }, [contract, address, gameId]);
 
-  // Load level information
+  // Load level information (now using local constants instead of contract call)
   const loadLevel = useCallback(
     async (levelId: number) => {
-      if (!contract) return;
-
       setIsLoading(true);
       setError(null);
 
       try {
-        const level = await contract.get_level(levelId);
-        setCurrentLevel(level as Level);
+        const level = getLevel(levelId);
+        if (!level) {
+          throw new Error(`Level ${levelId} not found`);
+        }
+        setCurrentLevel(level);
       } catch (err) {
         console.error('Failed to load level:', err);
         setError('Failed to load level');
@@ -342,23 +360,25 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
         setIsLoading(false);
       }
     },
-    [contract]
+    [] // No longer depends on contract
   );
 
-  // Get piece definition
+  // Get piece definition (now using local constants instead of contract call)
   const getPieceDefinition = useCallback(
     async (pieceId: number): Promise<GamePiece | null> => {
-      if (!contract) return null;
-
       try {
-        const piece = await contract.get_piece_definition(pieceId);
-        return piece as GamePiece;
+        const piece = getLocalPieceDefinition(pieceId);
+        if (!piece) {
+          console.warn(`Piece ${pieceId} not found in local definitions`);
+          return null;
+        }
+        return piece;
       } catch (err) {
         console.error('Failed to get piece definition:', err);
         return null;
       }
     },
-    [contract]
+    [] // No longer depends on contract
   );
 
   // Load player stats on mount

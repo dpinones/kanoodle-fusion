@@ -21,6 +21,9 @@ export function PieceSpawn({
   onPieceSelect,
   cellSize = 35,
 }: PieceSpawnProps) {
+  // Debug: Log placed pieces
+  console.log('PieceSpawn - Placed piece IDs:', placedPieceIds);
+
   return (
     <div className="c64-border bg-[#6C5EB5] p-4">
       {/* Header - C64 Style */}
@@ -69,13 +72,29 @@ export function PieceSpawn({
                 />
               </div>
 
-              {/* Placed indicator - C64 Style */}
+              {/* Placed indicator - C64 Style with strikethrough */}
               {isPlaced && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-[#880000] text-[#AAFFEE] px-3 py-1 border-2 border-[#000000] font-bold text-[8px]">
-                    PLACED
+                <>
+                  {/* Diagonal strikethrough line */}
+                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div
+                        className="absolute bg-[#880000] h-1"
+                        style={{
+                          width: '141.4%', // sqrt(2) * 100% to cover diagonal
+                          transform: 'rotate(-45deg)',
+                          boxShadow: '0 0 4px rgba(136, 0, 0, 0.8)',
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
+                  {/* PLACED badge */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-[#880000] text-[#AAFFEE] px-3 py-1 border-2 border-[#000000] font-bold text-[8px] shadow-lg">
+                      PLACED
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           );

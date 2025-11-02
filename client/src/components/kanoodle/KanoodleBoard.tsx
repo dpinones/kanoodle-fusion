@@ -177,11 +177,11 @@ export const KanoodleBoard = memo(function KanoodleBoard({
       </div>
 
       {/* Board label - C64 Style */}
-      <div className="mt-3 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#6C5EB5] border-2 border-[#A4A0E4]">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#00CC55] animate-pulse" />
-            <span className="text-xs text-[#AAFFEE] c64-text-glow">
+      <div className="mt-2 text-center">
+        <div className="inline-flex items-center gap-1 px-2 py-1 bg-[#6C5EB5] border border-[#A4A0E4]">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 bg-[#00CC55] animate-pulse" />
+            <span className="text-[10px] text-[#AAFFEE] c64-text-glow">
               {cells.filter(c => c.isCorrect && c.currentColor !== 0).length} / {BOARD_SIZE * BOARD_SIZE}
             </span>
           </div>

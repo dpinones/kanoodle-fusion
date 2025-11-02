@@ -11,6 +11,7 @@ import { PieceSpawn } from './PieceSpawn';
 import { PiecePreview } from './PiecePreview';
 import { TargetBoard } from './TargetBoard';
 import { ConnectWallet } from './ConnectWallet';
+import { SettingsPopup } from '../SettingsPopup';
 import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 import { getKanoodleText } from '../../lib/uiText';
 import { rotateClockwise } from '../../lib/kanoodle/pieceUtils';
@@ -31,6 +32,7 @@ export function KanoodleGameScreen() {
   const [pieceFlipped, setPieceFlipped] = useState(false);
   const [availablePieces, setAvailablePieces] = useState<GamePiece[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const {
     gameState,
@@ -102,6 +104,16 @@ export function KanoodleGameScreen() {
       setShowSuccess(true);
     }
   }, [gameState?.is_solved]);
+
+  // Listen for settings event
+  useEffect(() => {
+    const handleOpenSettings = () => {
+      setShowSettings(true);
+    };
+
+    window.addEventListener('openSettings', handleOpenSettings);
+    return () => window.removeEventListener('openSettings', handleOpenSettings);
+  }, []);
 
   // Handlers
   const handlePieceSelect = (piece: GamePiece) => {
@@ -190,102 +202,130 @@ export function KanoodleGameScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-[#6C5EB5] c64-screen relative overflow-hidden p-4 md:p-8">
+    <div className="h-screen w-screen bg-[#6C5EB5] c64-screen relative overflow-hidden flex flex-col">
       {/* C64 Border */}
-      <div className="absolute inset-0 border-[32px] border-[#A4A0E4] pointer-events-none"></div>
+      <div className="absolute inset-0 border-[16px] sm:border-[24px] border-[#A4A0E4] pointer-events-none"></div>
 
       {/* Rainbow stripe - top */}
-      <div className="absolute top-8 left-0 right-0 c64-rainbow z-10"></div>
+      <div className="absolute top-4 sm:top-6 left-0 right-0 c64-rainbow z-10"></div>
 
       {/* Header - C64 Style */}
-      <div className="max-w-7xl mx-auto mb-6 relative z-20">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+      <div className="max-w-7xl mx-auto mb-1 sm:mb-2 relative z-20 px-2 sm:px-4 pt-6 sm:pt-8">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           {/* Back button */}
           <button
             onClick={handleBackToHome}
-            className="c64-button py-3 px-6 text-xs bg-[#880000] border-[#660000]"
+            className="c64-button py-1 px-2 text-[9px] bg-[#880000] border-[#660000]"
           >
-            ← {text.backButton}
+            ← BACK
           </button>
 
           {/* Level and moves info - C64 Style */}
-          <div className="flex gap-4">
-            <div className="bg-[#000000] border-2 border-[#A4A0E4] px-6 py-3">
-              <span className="text-xs text-[#EEEE77] c64-text-glow font-bold">
-                {text.level} {gameState?.level_id || '?'}
+          <div className="flex gap-1.5">
+            <div className="bg-[#000000] border border-[#A4A0E4] px-2 py-0.5">
+              <span className="text-[9px] text-[#EEEE77] c64-text-glow font-bold">
+                LV {gameState?.level_id || '?'}
               </span>
             </div>
-            <div className="bg-[#000000] border-2 border-[#A4A0E4] px-6 py-3">
-              <span className="text-xs text-[#AAFFEE] c64-text-glow font-bold">
-                {text.moves}: {gameState?.moves_count || 0}
+            <div className="bg-[#000000] border border-[#A4A0E4] px-2 py-0.5">
+              <span className="text-[9px] text-[#AAFFEE] c64-text-glow font-bold">
+                MV: {gameState?.moves_count || 0}
               </span>
             </div>
           </div>
 
           {/* Right buttons */}
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-2 items-center">
             <ConnectWallet />
+            <button
+              onClick={() => {
+                const settingsEvent = new CustomEvent('openSettings');
+                window.dispatchEvent(settingsEvent);
+              }}
+              className="c64-button py-1 px-1 sm:py-2 sm:px-2 text-base sm:text-lg flex items-center justify-center"
+              title="Settings"
+            >
+              ⚙
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main game area - 2x2 Grid Layout - C64 Style */}
-      <div className="max-w-7xl mx-auto relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex-1 max-w-6xl mx-auto relative z-20 px-3 sm:px-4 md:px-6 overflow-hidden py-2 sm:py-4 pb-12 sm:pb-16 md:pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14 h-full max-h-[calc(100vh-180px)] sm:max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-220px)]">
           {/* Top Left: Piece Spawn */}
-          <div className="relative">
-            <PieceSpawn
-              availablePieces={availablePieces}
-              placedPieceIds={gameState?.placed_piece_ids || []}
-              onPieceSelect={handlePieceSelect}
-            />
-            {/* Arrow pointing right (to Selected Piece) */}
-            <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2">
-              <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">→</div>
+          <div className="relative flex flex-col h-[45%] lg:h-auto">
+            <div className="flex-1 flex flex-col min-h-0">
+              <PieceSpawn
+                availablePieces={availablePieces}
+                placedPieceIds={gameState?.placed_piece_ids || []}
+                onPieceSelect={handlePieceSelect}
+                cellSize={16}
+              />
+            </div>
+            {/* Arrow pointing right (Step 1 → 2) */}
+            <div className="hidden lg:block absolute top-1/2 -right-8 xl:-right-10 transform -translate-y-1/2 z-30">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-[9px] text-[#EEEE77] c64-text-glow font-bold">STEP 1</div>
+                <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">→</div>
+              </div>
             </div>
           </div>
 
           {/* Top Right: Selected Piece Preview */}
-          <div className="relative">
-            <PiecePreview
-              cells={selectedPiece ? gamePieceToCells(selectedPiece) : []}
-              rotation={pieceRotation}
-              flipped={pieceFlipped}
-              onRotate={handleRotate}
-              onFlip={handleFlip}
-              onRemove={handleRemoveFromPreview}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            />
-            {/* Arrow pointing down (to Board) */}
-            <div className="hidden lg:block absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-              <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">↓</div>
+          <div className="relative flex flex-col h-[45%] lg:h-auto">
+            <div className="flex-1 flex flex-col min-h-0">
+              <PiecePreview
+                cells={selectedPiece ? gamePieceToCells(selectedPiece) : []}
+                rotation={pieceRotation}
+                flipped={pieceFlipped}
+                onRotate={handleRotate}
+                onFlip={handleFlip}
+                onRemove={handleRemoveFromPreview}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                cellSize={22}
+              />
+            </div>
+            {/* Arrow pointing down (Step 2 → 3) */}
+            <div className="hidden lg:block absolute -bottom-8 xl:-bottom-10 left-1/2 transform -translate-x-1/2 z-30">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-4xl text-[#EEEE77] c64-text-glow animate-pulse">↓</div>
+                <div className="text-[9px] text-[#EEEE77] c64-text-glow font-bold">STEP 2</div>
+              </div>
             </div>
           </div>
 
           {/* Bottom Left: Target Pattern */}
-          <div>
-            <TargetBoard
-              targetSolution={currentLevel?.solution || new Array(16).fill(0)}
-              cellSize={50}
-            />
+          <div className="flex flex-col h-[45%] lg:h-auto">
+            <div className="flex-1 flex flex-col min-h-0">
+              <TargetBoard
+                targetSolution={currentLevel?.solution || new Array(16).fill(0)}
+                cellSize={22}
+              />
+            </div>
           </div>
 
           {/* Bottom Right: Game Board */}
-          <div>
-            <div className="c64-border bg-[#6C5EB5] p-4">
+          <div className="flex flex-col h-[45%] lg:h-auto">
+            <div className="flex-1 flex flex-col min-h-0 c64-border bg-[#6C5EB5] p-1.5 sm:p-2">
               {/* Header - C64 Style */}
-              <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-4">
-                <span className="text-[10px] text-black font-bold">YOUR BOARD</span>
+              <div className="bg-[#A4A0E4] px-2 py-0.5 sm:py-1 border-b-2 border-[#000000] mb-1.5 sm:mb-2 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] sm:text-[10px] text-black font-bold">YOUR BOARD</span>
+                  <span className="text-[8px] text-black font-bold">STEP 3</span>
+                </div>
               </div>
 
-              <div className="flex justify-center">
+              <div className="flex-1 flex items-center justify-center min-h-0">
                 <KanoodleBoard
                   currentSolution={gameState?.current_solution || new Array(16).fill(0)}
                   targetSolution={currentLevel?.solution || new Array(16).fill(0)}
                   onCellClick={handleBoardClick}
                   onCellDrop={handleBoardDrop}
                   highlightErrors={true}
+                  cellSize={28}
                 />
               </div>
             </div>
@@ -351,6 +391,9 @@ export function KanoodleGameScreen() {
           </div>
         </div>
       )}
+
+      {/* Settings Popup */}
+      {showSettings && <SettingsPopup onClose={() => setShowSettings(false)} />}
 
       {/* Error display - C64 Style */}
       {error && (

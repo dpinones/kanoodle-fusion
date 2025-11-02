@@ -22,11 +22,12 @@ class AudioManager {
     // Initialize audio context on first user interaction
     if (typeof window !== 'undefined') {
       // Load settings from localStorage
-      const musicSetting = localStorage.getItem('musicEnabled');
-      const sfxSetting = localStorage.getItem('soundEffectsEnabled');
+      const musicVolume = localStorage.getItem('musicVolume');
+      const soundVolume = localStorage.getItem('soundVolume');
 
-      this.musicEnabled = musicSetting ? JSON.parse(musicSetting) : false;
-      this.sfxEnabled = sfxSetting ? JSON.parse(sfxSetting) : true;
+      // If volumes are set, use them (enabled by default at 100%)
+      this.musicEnabled = musicVolume ? parseFloat(musicVolume) > 0 : true;
+      this.sfxEnabled = soundVolume ? parseFloat(soundVolume) > 0 : true;
     }
   }
 
@@ -40,11 +41,15 @@ class AudioManager {
 
       this.musicGain = this.audioContext.createGain();
       this.musicGain.connect(this.masterGain);
-      this.musicGain.gain.value = 0.3; // Lower volume for music
+      // Load music volume from localStorage or default to 100%
+      const savedMusicVolume = localStorage.getItem('musicVolume');
+      this.musicGain.gain.value = savedMusicVolume ? parseFloat(savedMusicVolume) * 0.3 : 0.3;
 
       this.sfxGain = this.audioContext.createGain();
       this.sfxGain.connect(this.masterGain);
-      this.sfxGain.gain.value = 0.5; // Medium volume for SFX
+      // Load sound volume from localStorage or default to 100%
+      const savedSoundVolume = localStorage.getItem('soundVolume');
+      this.sfxGain.gain.value = savedSoundVolume ? parseFloat(savedSoundVolume) * 0.5 : 0.5;
     }
 
     // Resume audio context if suspended (browser autoplay policy)
@@ -235,6 +240,24 @@ class AudioManager {
   setSoundEffectsEnabled(enabled: boolean) {
     this.sfxEnabled = enabled;
     localStorage.setItem('soundEffectsEnabled', JSON.stringify(enabled));
+  }
+
+  setMusicVolume(volume: number) {
+    this.ensureAudioContext();
+    if (this.musicGain) {
+      // Scale volume (0-1) to appropriate level
+      this.musicGain.gain.value = volume * 0.3;
+    }
+    this.musicEnabled = volume > 0;
+  }
+
+  setSoundVolume(volume: number) {
+    this.ensureAudioContext();
+    if (this.sfxGain) {
+      // Scale volume (0-1) to appropriate level
+      this.sfxGain.gain.value = volume * 0.5;
+    }
+    this.sfxEnabled = volume > 0;
   }
 
   // Resume audio context (call on user interaction to bypass autoplay policy)

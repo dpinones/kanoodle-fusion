@@ -130,7 +130,7 @@ export function PiecePreview({
       {/* Drag instruction - C64 Style */}
       {cells.length > 0 && (
         <div className="mt-4 text-center text-[8px] text-[#BBBBBB]">
-          DRAG TO BOARD OR CLICK CELL
+          
         </div>
       )}
     </div>

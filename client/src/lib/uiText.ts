@@ -23,6 +23,12 @@ export function getCurrentLanguage(): Language {
 
 export const KANOODLE_TEXT = {
   en: {
+    // Login screen
+    login: {
+      loginButton: "LOGIN",
+      disconnectButton: "DISCONNECT",
+      settingsButton: "SETTINGS",
+    },
     // Home screen
     home: {
       title: "KANOODLE FUSION",
@@ -65,6 +71,12 @@ export const KANOODLE_TEXT = {
     },
   },
   es: {
+    // Login screen
+    login: {
+      loginButton: "INICIAR SESIÓN",
+      disconnectButton: "DESCONECTAR",
+      settingsButton: "CONFIGURACIÓN",
+    },
     // Home screen
     home: {
       title: "KANOODLE FUSION",
@@ -107,6 +119,12 @@ export const KANOODLE_TEXT = {
     },
   },
   ja: {
+    // Login screen
+    login: {
+      loginButton: "ログイン",
+      disconnectButton: "切断",
+      settingsButton: "設定",
+    },
     // Home screen
     home: {
       title: "KANOODLE FUSION",

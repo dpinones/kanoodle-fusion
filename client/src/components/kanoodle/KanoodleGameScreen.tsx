@@ -69,6 +69,7 @@ export function KanoodleGameScreen() {
     error,
     placePiece,
     resetGame,
+    undoGame,
     loadLevel,
     getPieceDefinition,
     refreshGameState,
@@ -400,6 +401,20 @@ export function KanoodleGameScreen() {
     }
   };
 
+  const handleUndo = async () => {
+    console.log('↩️ Undoing last piece...');
+    audioManager.playButtonClick();
+
+    const success = await undoGame();
+    console.log('🔄 Undo result:', success);
+
+    if (success) {
+      console.log('✅ Last piece removed successfully');
+    } else {
+      console.log('❌ Failed to undo (no pieces to remove or error)');
+    }
+  };
+
   if (!address) {
     return (
       <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
@@ -503,12 +518,19 @@ export function KanoodleGameScreen() {
                 />
               </div>
 
-              {/* Clear button */}
-              <div className="mt-3">
+              {/* Undo and Clear buttons */}
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={handleUndo}
+                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#0088FF] border-[#006CD8]"
+                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                >
+                  {text.undoButton}
+                </button>
                 <button
                   onClick={handleClearBoard}
-                  className="w-full c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
-                  disabled={isLoading}
+                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
+                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
                 >
                    {text.clearButton}
                 </button>

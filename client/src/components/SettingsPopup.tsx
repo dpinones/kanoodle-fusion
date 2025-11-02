@@ -102,10 +102,10 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="relative c64-border bg-[#6C5EB5] p-6 max-w-md w-full mx-4 shadow-2xl">
+      <div className="relative c64-border bg-[#6C5EB5] p-4 w-80 mx-4 shadow-2xl">
         {/* Window title bar */}
-        <div className="absolute top-0 left-0 right-0 h-8 bg-[#A4A0E4] flex items-center justify-between px-3">
-          <span className="text-sm text-black font-bold">{text.title}</span>
+        <div className="absolute top-0 left-0 right-0 h-8 bg-[#A4A0E4] flex items-center justify-between px-3 border-b-2 border-[#000000]">
+          <span className="text-[10px] text-black font-bold">{text.title}</span>
           <button
             onClick={onClose}
             className="text-black font-bold hover:text-[#880000] text-xl leading-none"
@@ -115,7 +115,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
         </div>
 
         {/* Content */}
-        <div className="mt-10 space-y-6">
+        <div className="mt-10 space-y-4">
           {/* Music Volume */}
           <div>
             <label className="block text-[#AAFFEE] text-xs mb-2 c64-text-glow flex justify-between">

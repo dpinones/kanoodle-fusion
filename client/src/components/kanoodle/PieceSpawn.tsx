@@ -9,6 +9,7 @@ import { gamePieceToCells, type RotationValue } from '../../lib/kanoodle/types';
 import { audioManager } from '../../lib/audioManager';
 import { rotatePiece, flipPiece } from '../../lib/kanoodle/pieceUtils';
 import type { GamePiece } from '../../lib/kanoodle/types';
+import { getKanoodleText } from '../../lib/uiText';
 
 interface PieceSpawnProps {
   availablePieces: GamePiece[];
@@ -45,12 +46,14 @@ export function PieceSpawn({
   // Ref to store piece elements for creating custom drag images
   const pieceRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
+  const text = getKanoodleText().game;
+
   return (
     <div className="c64-border bg-[#6C5EB5] p-4">
       {/* Header - C64 Style */}
       <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-4">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-black font-bold">PIECES</span>
+          <span className="text-[10px] text-black font-bold">{text.pieces}</span>
           <span className="text-[8px] text-black">
             {availablePieces.length - placedPieceIds.length} / {availablePieces.length}
           </span>

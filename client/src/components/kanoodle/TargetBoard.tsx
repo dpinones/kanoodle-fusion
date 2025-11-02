@@ -7,6 +7,7 @@ import { memo, useState, useEffect } from 'react';
 import { ColorHex, type ColorValue } from '../../lib/kanoodle/types';
 import { ColorblindHex, ColorSymbol } from '../../lib/kanoodle/colorblindColors';
 import { BOARD_SIZE } from '../../lib/kanoodle/config';
+import { getKanoodleText } from '../../lib/uiText';
 
 interface TargetBoardProps {
   targetSolution: number[];  // 16 cells with target colors
@@ -38,11 +39,13 @@ export const TargetBoard = memo(function TargetBoard({
   // Select color palette based on mode
   const colorPalette = colorblindMode ? ColorblindHex : ColorHex;
 
+  const text = getKanoodleText().game;
+
   return (
     <div className="c64-border bg-[#6C5EB5] p-3 flex flex-col h-full">
       {/* Header - C64 Style */}
       <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-3">
-        <span className="text-[10px] text-black font-bold">TARGET PATTERN</span>
+        <span className="text-[10px] text-black font-bold">{text.targetPattern}</span>
       </div>
 
       {/* Board container - C64 Style */}
@@ -100,7 +103,7 @@ export const TargetBoard = memo(function TargetBoard({
 
       {/* Label - C64 Style */}
       <div className="mt-3 text-center text-[8px] text-[#BBBBBB]">
-        
+        {text.matchPattern}
       </div>
     </div>
   );

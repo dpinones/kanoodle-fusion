@@ -67,6 +67,7 @@ export function KanoodleGameScreen() {
     isLoading,
     error,
     placePiece,
+    resetGame,
     loadLevel,
     getPieceDefinition,
     refreshGameState,
@@ -135,6 +136,28 @@ export function KanoodleGameScreen() {
     console.log('🔄 Level changed to:', gameState?.level_id);
     setHasShownCompletion(false);
   }, [gameState?.level_id]);
+
+  // Auto-select first piece when board is cleared (placed_piece_ids becomes empty)
+  useEffect(() => {
+    if (!gameState || !availablePieces.length) return;
+
+    // If board is empty and no piece is selected, select the first piece
+    const isBoardEmpty = gameState.placed_piece_ids.length === 0;
+    const noPieceSelected = !selectedPiece;
+
+    console.log('👀 Auto-select check:', {
+      isBoardEmpty,
+      noPieceSelected,
+      placed_piece_ids: gameState.placed_piece_ids,
+      selectedPiece: selectedPiece?.piece_id,
+      availablePiecesCount: availablePieces.length
+    });
+
+    if (isBoardEmpty && noPieceSelected) {
+      console.log('🔄 Board is empty and no piece selected - auto-selecting first piece');
+      setSelectedPiece(availablePieces[0]);
+    }
+  }, [gameState?.placed_piece_ids, availablePieces, selectedPiece]);
 
   // Monitor game state changes to detect level completion
   useEffect(() => {
@@ -320,6 +343,43 @@ export function KanoodleGameScreen() {
     console.log('📍 Staying on current screen, next level will load automatically');
   };
 
+  const handleClearBoard = async () => {
+    console.log('🧹 Clearing board...');
+    console.log('📋 State before clear:', {
+      gameState,
+      availablePieces: availablePieces.length,
+      selectedPiece: selectedPiece?.piece_id,
+      transformations: pieceTransformations,
+      placed_piece_ids: gameState?.placed_piece_ids
+    });
+
+    audioManager.playButtonClick();
+
+    // Clear all piece transformations
+    setPieceTransformations({});
+
+    // Clear selected piece - the useEffect will auto-select after reset
+    setSelectedPiece(null);
+
+    const success = await resetGame();
+    console.log('🔄 Reset result:', success);
+
+    if (success) {
+      console.log('✅ Board cleared successfully');
+      console.log('📋 Game state after reset:', {
+        placed_piece_ids: gameState?.placed_piece_ids,
+        current_solution: gameState?.current_solution
+      });
+      console.log('📋 useEffect will auto-select first piece when state updates');
+    } else {
+      console.log('❌ Failed to clear board');
+      // Restore selection if failed
+      if (availablePieces.length > 0) {
+        setSelectedPiece(availablePieces[0]);
+      }
+    }
+  };
+
   if (!address) {
     return (
       <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
@@ -426,6 +486,17 @@ export function KanoodleGameScreen() {
                   highlightErrors={false}
                 />
               </div>
+
+              {/* Clear button */}
+              <div className="mt-3">
+                <button
+                  onClick={handleClearBoard}
+                  className="w-full c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
+                  disabled={isLoading}
+                >
+                  🧹 {text.clearButton}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -526,7 +597,7 @@ export function KanoodleGameScreen() {
                   className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EEEE77]"
                   style={{ fontFamily: 'Press Start 2P, monospace' }}
                 >
-                  {text.next} {nextLevelNumber}
+                  {text.nextLevel} {nextLevelNumber}
                 </p>
               </div>
 

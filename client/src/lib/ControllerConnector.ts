@@ -24,6 +24,11 @@ const policies: SessionPolicies = {
             entrypoint: "place_piece",
             description: "Place a piece on the board",
           },
+          {
+            name: "reset",
+            entrypoint: "reset",
+            description: "Reset the game",
+          },
         ],
       },
     } : {}),

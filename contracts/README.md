@@ -43,7 +43,12 @@ los niveles son 50 que los quiero guardar en constantes. para saber si completo 
 
 
 sozo -P slot execute  kanoodle_fusion_system start_game 0x00dba4d5ba495338b74aceac92ddc26afff9319d675e09db0aadba40cc606245 1
-sozo -P slot execute kanoodle_fusion_system place_piece 61 0x00dba4d5ba495338b74aceac92ddc26afff9319d675e09db0aadba40cc606245 1 3 0 0 0
+sozo -P slot execute kanoodle_fusion_system place_piece 48 0x00dba4d5ba495338b74aceac92ddc26afff9319d675e09db0aadba40cc606245 1 3 0 0 0
+sozo -P slot execute kanoodle_fusion_system reset 48
 
 
 sozo -P slot call kanoodle_fusion_system get_level 1
+
+sozo -P slot model get KanoodleGame 48
+
+

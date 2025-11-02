@@ -35,8 +35,12 @@ export function PieceSpawn({
   onDragEnd,
   cellSize = 35,
 }: PieceSpawnProps) {
-  // Debug: Log placed pieces
-  console.log('PieceSpawn - Placed piece IDs:', placedPieceIds);
+  // Debug: Log placed pieces and selected piece
+  console.log('🎨 PieceSpawn render:', {
+    placedPieceIds,
+    selectedPiece: selectedPiece?.piece_id,
+    availablePieces: availablePieces.length
+  });
 
   // Ref to store piece elements for creating custom drag images
   const pieceRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -58,6 +62,9 @@ export function PieceSpawn({
         {availablePieces.map((piece) => {
           const isPlaced = placedPieceIds.includes(piece.piece_id);
           const isSelected = selectedPiece?.piece_id === piece.piece_id;
+          const isDraggable = !isPlaced && isSelected;
+
+          console.log(`🎲 Piece ${piece.piece_id}:`, { isPlaced, isSelected, isDraggable });
 
           // Apply transformations for this piece (each piece remembers its own state)
           let cells = gamePieceToCells(piece);
@@ -81,7 +88,7 @@ export function PieceSpawn({
                   ? 'border-[#EEEE77] bg-[#222222] cursor-move'
                   : 'border-[#A4A0E4] hover:bg-[#333333] cursor-pointer'
               }`}
-              draggable={!isPlaced && isSelected}
+              draggable={isDraggable}
               onClick={() => {
                 if (!isPlaced) {
                   audioManager.playButtonClick();

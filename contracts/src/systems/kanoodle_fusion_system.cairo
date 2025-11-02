@@ -470,6 +470,16 @@ pub mod kanoodle_fusion_system {
             let mut store = StoreTrait::new(self.world(@"kanoodle_fusion"));
             let mut game = store.get_kanoodle_game(game_id);
 
+            // Clear all placed pieces from the store
+            let mut piece_id: u8 = 1;
+            loop {
+                if piece_id > 13 {
+                    break;
+                }
+                store.delete_placed_piece(game_id, game.player, piece_id);
+                piece_id += 1;
+            }
+
             // Reset the game state to empty
             let empty_solution = array![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             game.current_solution = empty_solution.span();

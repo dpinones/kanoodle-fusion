@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAccount, useConnect, useDisconnect } from '@starknet-react/core';
 import { ControllerConnector } from '@cartridge/connector';
+import { lookupAddresses } from '@cartridge/controller';
 
 export function ConnectWallet() {
   const { connect, connectors } = useConnect();
@@ -12,9 +13,52 @@ export function ConnectWallet() {
   const { address } = useAccount();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const controller = connectors[0] as ControllerConnector;
+
+  // Normalize address by removing leading zeros after 0x
+  const normalizeAddress = (addr: string): string => {
+    if (!addr) return addr;
+    // Remove 0x prefix, remove leading zeros, add 0x back
+    const withoutPrefix = addr.slice(2);
+    const withoutLeadingZeros = withoutPrefix.replace(/^0+/, '');
+    return '0x' + withoutLeadingZeros;
+  };
+
+  // Lookup username when address changes
+  useEffect(() => {
+    async function fetchUsername() {
+      if (!address) {
+        setUsername(null);
+        return;
+      }
+
+      console.log('🔍 Looking up username for address:', address);
+
+      try {
+        const addressMap = await lookupAddresses([address]);
+        console.log('📋 Address map:', addressMap);
+
+        // Try both the original address and normalized version
+        let fetchedUsername = addressMap.get(address);
+        if (!fetchedUsername) {
+          const normalizedAddr = normalizeAddress(address);
+          console.log('🔄 Trying normalized address:', normalizedAddr);
+          fetchedUsername = addressMap.get(normalizedAddr);
+        }
+
+        console.log('👤 Fetched username:', fetchedUsername);
+        setUsername(fetchedUsername || null);
+      } catch (error) {
+        console.error('❌ Failed to lookup username:', error);
+        setUsername(null);
+      }
+    }
+
+    fetchUsername();
+  }, [address]);
 
   // Handle click outside dropdown
   useEffect(() => {
@@ -80,6 +124,9 @@ export function ConnectWallet() {
   }
 
   // If connected
+  const displayText = username || formatAddress(address);
+  console.log('🎭 Display text:', { username, address, displayText });
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -87,7 +134,7 @@ export function ConnectWallet() {
         className="c64-button py-2 px-4 text-xs flex items-center gap-2 bg-[#0088FF] border-[#006CD8]"
       >
         <div className="w-2 h-2 bg-[#00CC55] rounded-full animate-pulse" />
-        <span>{formatAddress(address)}</span>
+        <span>{displayText}</span>
         <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
       </button>
 

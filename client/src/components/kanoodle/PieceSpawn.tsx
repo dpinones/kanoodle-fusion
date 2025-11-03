@@ -22,6 +22,7 @@ interface PieceSpawnProps {
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   cellSize?: number;
+  disabled?: boolean;
 }
 
 export function PieceSpawn({
@@ -35,6 +36,7 @@ export function PieceSpawn({
   onDragStart,
   onDragEnd,
   cellSize = 35,
+  disabled = false,
 }: PieceSpawnProps) {
   // Debug: Log placed pieces and selected piece
   console.log('🎨 PieceSpawn render:', {
@@ -65,7 +67,7 @@ export function PieceSpawn({
         {availablePieces.map((piece) => {
           const isPlaced = placedPieceIds.includes(piece.piece_id);
           const isSelected = selectedPiece?.piece_id === piece.piece_id;
-          const isDraggable = !isPlaced; // All non-placed pieces are draggable
+          const isDraggable = !isPlaced && !disabled; // All non-placed pieces are draggable unless disabled
 
           console.log(`🎲 Piece ${piece.piece_id}:`, { isPlaced, isSelected, isDraggable });
 
@@ -85,7 +87,7 @@ export function PieceSpawn({
             <div
               key={piece.piece_id}
               className={`relative bg-[#000000] border-2 p-3 transition-all ${
-                isPlaced
+                isPlaced || disabled
                   ? 'opacity-30 cursor-not-allowed border-[#555555]'
                   : isSelected
                   ? 'border-[#EEEE77] bg-[#222222] cursor-move'
@@ -93,13 +95,13 @@ export function PieceSpawn({
               }`}
               draggable={isDraggable}
               onClick={() => {
-                if (!isPlaced) {
+                if (!isPlaced && !disabled) {
                   audioManager.playButtonClick();
                   onPieceSelect(piece);
                 }
               }}
               onDragStart={(e) => {
-                if (!isPlaced) {
+                if (!isPlaced && !disabled) {
                   // If this piece is not selected, select it first
                   if (!isSelected) {
                     audioManager.playButtonClick();
@@ -249,20 +251,26 @@ export function PieceSpawn({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  audioManager.playButtonClick();
-                  onRotate();
+                  if (!disabled) {
+                    audioManager.playButtonClick();
+                    onRotate();
+                  }
                 }}
-                className="c64-button py-2 px-3 text-[10px] bg-[#0088FF] border-[#0066CC]"
+                disabled={disabled}
+                className="c64-button py-2 px-3 text-[10px] bg-[#0088FF] border-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ↻ ROTATE
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  audioManager.playButtonClick();
-                  onFlip();
+                  if (!disabled) {
+                    audioManager.playButtonClick();
+                    onFlip();
+                  }
                 }}
-                className="c64-button py-2 px-3 text-[10px] bg-[#8c28d8] border-[#6a1fa8]"
+                disabled={disabled}
+                className="c64-button py-2 px-3 text-[10px] bg-[#8c28d8] border-[#6a1fa8] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ⇄ FLIP
               </button>

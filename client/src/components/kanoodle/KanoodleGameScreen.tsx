@@ -261,7 +261,7 @@ export function KanoodleGameScreen() {
   };
 
   const handleBoardClick = async (x: number, y: number) => {
-    if (!selectedPiece || !gameId || !address || !currentLevel || !gameState) return;
+    if (!selectedPiece || !gameId || !address || !currentLevel || !gameState || isLoading) return;
 
     console.log('🎮 Placing piece:', {
       piece_id: selectedPiece.piece_id,
@@ -392,7 +392,7 @@ export function KanoodleGameScreen() {
   };
 
   const handleBoardDrop = async (e: React.DragEvent) => {
-    if (!selectedPiece) return;
+    if (!selectedPiece || isLoading) return;
 
     // Clear preview immediately
     setDragPreviewPosition(null);
@@ -568,6 +568,7 @@ export function KanoodleGameScreen() {
               onFlip={handleFlip}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
+              disabled={isLoading}
             />
           </div>
 

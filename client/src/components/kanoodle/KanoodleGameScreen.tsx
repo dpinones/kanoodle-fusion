@@ -199,15 +199,30 @@ export function KanoodleGameScreen() {
 
     if (isComplete && hasContent && !hasShownCompletion) {
       console.log('🎉 LEVEL COMPLETE DETECTED! Showing animation...');
-      setShowLevelComplete(true);
-      setNextLevelNumber(Number(gameState.level_id || 0) + 1);
-      setHasShownCompletion(true);
+      const currentLevelNumber = Number(gameState.level_id || 0);
 
-      setTimeout(() => {
-        console.log('⏭️  Hiding animation and advancing to next level...');
-        setShowLevelComplete(false);
-        handleNextLevel();
-      }, 3000);
+      // Check if this is the final level (level 50)
+      if (currentLevelNumber === 50) {
+        console.log('🏆 FINAL LEVEL COMPLETED! Navigating to victory screen...');
+        setShowLevelComplete(true);
+        setNextLevelNumber(null);
+        setHasShownCompletion(true);
+
+        setTimeout(() => {
+          console.log('🎊 Navigating to Victory Screen...');
+          navigate('/victory');
+        }, 3000);
+      } else {
+        setShowLevelComplete(true);
+        setNextLevelNumber(currentLevelNumber + 1);
+        setHasShownCompletion(true);
+
+        setTimeout(() => {
+          console.log('⏭️  Hiding animation and advancing to next level...');
+          setShowLevelComplete(false);
+          handleNextLevel();
+        }, 3000);
+      }
     }
   }, [gameState?.current_solution, gameState?.level_id, currentLevel?.solution, hasShownCompletion]);
 
@@ -313,16 +328,31 @@ export function KanoodleGameScreen() {
       // If we predicted completion, show the animation immediately
       if (willComplete && !hasShownCompletion) {
         console.log('🎊 Level WILL complete! Showing animation NOW (predicted)...');
-        setShowLevelComplete(true);
-        setNextLevelNumber(Number(gameState.level_id || 0) + 1);
-        setHasShownCompletion(true);
+        const currentLevelNumber = Number(gameState.level_id || 0);
 
-        // Auto-hide after 3 seconds and go to next level
-        setTimeout(() => {
-          console.log('⏭️  Hiding animation and advancing to next level...');
-          setShowLevelComplete(false);
-          handleNextLevel();
-        }, 3000);
+        // Check if this is the final level (level 50)
+        if (currentLevelNumber === 50) {
+          console.log('🏆 FINAL LEVEL COMPLETED! Navigating to victory screen...');
+          setShowLevelComplete(true);
+          setNextLevelNumber(null);
+          setHasShownCompletion(true);
+
+          setTimeout(() => {
+            console.log('🎊 Navigating to Victory Screen...');
+            navigate('/victory');
+          }, 3000);
+        } else {
+          setShowLevelComplete(true);
+          setNextLevelNumber(currentLevelNumber + 1);
+          setHasShownCompletion(true);
+
+          // Auto-hide after 3 seconds and go to next level
+          setTimeout(() => {
+            console.log('⏭️  Hiding animation and advancing to next level...');
+            setShowLevelComplete(false);
+            handleNextLevel();
+          }, 3000);
+        }
       } else {
         console.log('⚪ Level not complete yet (predicted)');
       }
@@ -701,7 +731,8 @@ ${text.areYouSure}`}
       {/* Level Complete Animation - C64 Style */}
       {(() => {
         console.log('🎬 Render animation state:', { showLevelComplete, nextLevelNumber });
-        return showLevelComplete && nextLevelNumber !== null && (
+        const isFinalLevel = gameState?.level_id === 50;
+        return showLevelComplete && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm animate-fade-in">
             <div className="text-center animate-bounce-in">
               {/* YOU PASSED! */}
@@ -710,19 +741,36 @@ ${text.areYouSure}`}
                   className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#AAFFEE] c64-text-glow mb-2 animate-pulse"
                   style={{ fontFamily: 'Press Start 2P, monospace' }}
                 >
-                  {text.youPassed}
+                  {isFinalLevel ? 'VICTORY!' : text.youPassed}
                 </h1>
               </div>
 
-              {/* NEXT X */}
-              <div className="bg-[#6C5EB5] border-4 border-[#A4A0E4] px-8 py-6 c64-text-glow">
-                <p
-                  className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EEEE77]"
-                  style={{ fontFamily: 'Press Start 2P, monospace' }}
-                >
-                  {text.nextLevel} {nextLevelNumber}
-                </p>
-              </div>
+              {/* NEXT X or FINAL LEVEL MESSAGE */}
+              {isFinalLevel ? (
+                <div className="bg-[#6C5EB5] border-4 border-[#A4A0E4] px-8 py-6 c64-text-glow">
+                  <p
+                    className="text-xl sm:text-2xl md:text-3xl font-bold text-[#00CC55]"
+                    style={{ fontFamily: 'Press Start 2P, monospace' }}
+                  >
+                    ALL 50 LEVELS
+                  </p>
+                  <p
+                    className="text-xl sm:text-2xl md:text-3xl font-bold text-[#00CC55] mt-2"
+                    style={{ fontFamily: 'Press Start 2P, monospace' }}
+                  >
+                    COMPLETE!
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-[#6C5EB5] border-4 border-[#A4A0E4] px-8 py-6 c64-text-glow">
+                  <p
+                    className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EEEE77]"
+                    style={{ fontFamily: 'Press Start 2P, monospace' }}
+                  >
+                    {text.nextLevel} {nextLevelNumber}
+                  </p>
+                </div>
+              )}
 
               {/* Decorative stars */}
               <div className="mt-6 flex justify-center gap-4">

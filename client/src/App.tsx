@@ -10,6 +10,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { KanoodleHome } from './components/kanoodle/KanoodleHome';
 import { KanoodleGameScreen } from './components/kanoodle/KanoodleGameScreen';
 import { TutorialScreen } from './components/kanoodle/TutorialScreen';
+import { VictoryScreen } from './components/kanoodle/VictoryScreen';
 import { LanguageProvider } from './lib/LanguageContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -107,6 +108,16 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <TutorialScreen />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Victory Screen - Completed all levels */}
+      <Route
+        path="/victory"
+        element={
+          <ProtectedRoute>
+            <VictoryScreen />
           </ProtectedRoute>
         }
       />

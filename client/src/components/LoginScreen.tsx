@@ -7,7 +7,6 @@ import { useAccount, useConnect, useDisconnect } from '@starknet-react/core';
 import { ControllerConnector } from '@cartridge/connector';
 import { SettingsPopup } from './SettingsPopup';
 import { getKanoodleText } from '../lib/uiText';
-import { useLanguage } from '../lib/LanguageContext';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -18,7 +17,6 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
-  const { language } = useLanguage();
 
   const controller = connectors[0] as ControllerConnector;
   const text = getKanoodleText().login;

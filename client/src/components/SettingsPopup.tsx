@@ -24,9 +24,8 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
     return saved ? parseFloat(saved) : 1.0;
   });
 
-  // Refs to track previous values
+  // Ref to track previous music volume value
   const prevMusicVolumeRef = useRef(musicVolume);
-  const prevSoundVolumeRef = useRef(soundVolume);
 
   const [colorblindMode, setColorblindMode] = useState(() => {
     const saved = localStorage.getItem('colorblindMode');

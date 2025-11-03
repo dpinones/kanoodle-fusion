@@ -57,6 +57,7 @@ export const KANOODLE_TEXT = {
       pieces: "PIECES",
       yourBoard: "YOUR BOARD",
       targetPattern: "TARGET PATTERN",
+      matchPattern: "MATCH THIS PATTERN",
       warning: "WARNING",
       progressLost: "ALL PROGRESS WILL BE LOST",
       areYouSure: "ARE YOU SURE?",

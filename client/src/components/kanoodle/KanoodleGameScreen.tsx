@@ -536,19 +536,17 @@ export function KanoodleGameScreen() {
       </div>
 
       {/* Home button and Level info - aligned with top buttons */}
-      <div className="w-full relative z-20 mb-8">
-        <div className="absolute top-12 left-12 flex items-center gap-4">
-          <button
-            onClick={handleBackToHome}
-            className="c64-button py-2 px-5 text-xs bg-[#00CC55] border-[#00B428]"
-          >
-             {text.homeButton}
-          </button>
-          <div className="bg-[#000000] border-2 border-[#A4A0E4] px-4 py-2">
-            <span className="text-xs text-[#EEEE77] c64-text-glow font-bold">
-              {text.level} {gameState?.level_id || '?'}
-            </span>
-          </div>
+      <div className="absolute top-12 left-12 flex items-center gap-3 z-50">
+        <button
+          onClick={handleBackToHome}
+          className="c64-button py-2 px-5 text-xs bg-[#00CC55] border-[#00B428]"
+        >
+           {text.homeButton}
+        </button>
+        <div className="bg-[#000000] border-2 border-[#A4A0E4] px-4 py-2">
+          <span className="text-xs text-[#EEEE77] c64-text-glow font-bold">
+            {text.level} {gameState?.level_id || '?'}
+          </span>
         </div>
       </div>
 

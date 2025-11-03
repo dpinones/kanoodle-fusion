@@ -134,11 +134,11 @@ pub fn get_level(level_id: u8) -> Level {
             solution: array![
                 colors::BLUE, colors::GREEN, colors::BLUE, colors::BLUE, colors::RED,
                 colors::YELLOW, colors::YELLOW, colors::BLUE, colors::RED, colors::YELLOW,
-                colors::YELLOW, colors::BLUE, colors::RED, colors::RED, colors::BLUE,
+                colors::BLUE, colors::BLUE, colors::RED, colors::RED, colors::BLUE,
                 colors::NEUTRAL,
             ]
                 .span(),
-            allowed_pieces: array![piece::ID_1, piece::ID_4, piece::ID_6, piece::ID_3, piece::ID_11]
+            allowed_pieces: array![piece::ID_1, piece::ID_4, piece::ID_6, piece::ID_10, piece::ID_11]
                 .span(),
         }
     } else if level_id == 5 {

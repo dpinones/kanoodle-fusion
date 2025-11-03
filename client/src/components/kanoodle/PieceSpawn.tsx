@@ -65,7 +65,7 @@ export function PieceSpawn({
         {availablePieces.map((piece) => {
           const isPlaced = placedPieceIds.includes(piece.piece_id);
           const isSelected = selectedPiece?.piece_id === piece.piece_id;
-          const isDraggable = !isPlaced && isSelected;
+          const isDraggable = !isPlaced; // All non-placed pieces are draggable
 
           console.log(`🎲 Piece ${piece.piece_id}:`, { isPlaced, isSelected, isDraggable });
 
@@ -89,7 +89,7 @@ export function PieceSpawn({
                   ? 'opacity-30 cursor-not-allowed border-[#555555]'
                   : isSelected
                   ? 'border-[#EEEE77] bg-[#222222] cursor-move'
-                  : 'border-[#A4A0E4] hover:bg-[#333333] cursor-pointer'
+                  : 'border-[#A4A0E4] hover:bg-[#333333] cursor-grab active:cursor-grabbing'
               }`}
               draggable={isDraggable}
               onClick={() => {
@@ -99,7 +99,13 @@ export function PieceSpawn({
                 }
               }}
               onDragStart={(e) => {
-                if (isSelected && !isPlaced) {
+                if (!isPlaced) {
+                  // If this piece is not selected, select it first
+                  if (!isSelected) {
+                    audioManager.playButtonClick();
+                    onPieceSelect(piece);
+                  }
+
                   // Create a custom drag image at board cell size (45px)
                   const boardCellSize = 45;
 

@@ -270,7 +270,7 @@ pub fn get_level(level_id: u8) -> Level {
                 .span(),
             allowed_pieces: array![
                 piece::ID_1, piece::ID_2, piece::ID_6, piece::ID_3, piece::ID_10, piece::ID_11,
-                piece::ID_12, piece::ID_13,
+                piece::ID_12,
             ]
                 .span(),
         }
@@ -465,7 +465,7 @@ pub fn get_level(level_id: u8) -> Level {
             ]
                 .span(),
             allowed_pieces: array![
-                piece::ID_1, piece::ID_6, piece::ID_3, piece::ID_7, piece::ID_9, piece::ID_11,
+                piece::ID_1, piece::ID_6, piece::ID_10, piece::ID_7, piece::ID_9, piece::ID_11,
                 piece::ID_12,
             ]
                 .span(),

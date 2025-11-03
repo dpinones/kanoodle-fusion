@@ -197,7 +197,7 @@ export const LEVELS: Record<number, Level> = {
     ],
     allowed_pieces: [
       PieceIds.ID_1, PieceIds.ID_2, PieceIds.ID_6, PieceIds.ID_3,
-      PieceIds.ID_10, PieceIds.ID_11, PieceIds.ID_12, PieceIds.ID_13,
+      PieceIds.ID_10, PieceIds.ID_11, PieceIds.ID_12,
     ],
   },
   14: {
@@ -365,7 +365,7 @@ export const LEVELS: Record<number, Level> = {
       Colors.PURPLE, Colors.NEUTRAL, Colors.ORANGE, Colors.ORANGE,
     ],
     allowed_pieces: [
-      PieceIds.ID_1, PieceIds.ID_6, PieceIds.ID_3, PieceIds.ID_7,
+      PieceIds.ID_1, PieceIds.ID_6, PieceIds.ID_10, PieceIds.ID_7,
       PieceIds.ID_9, PieceIds.ID_11, PieceIds.ID_12,
     ],
   },

@@ -75,11 +75,11 @@ export const LEVELS: Record<number, Level> = {
     solution: [
       Colors.BLUE, Colors.GREEN, Colors.BLUE, Colors.BLUE,
       Colors.RED, Colors.YELLOW, Colors.YELLOW, Colors.BLUE,
-      Colors.RED, Colors.YELLOW, Colors.YELLOW, Colors.BLUE,
+      Colors.RED, Colors.YELLOW, Colors.BLUE, Colors.BLUE,
       Colors.RED, Colors.RED, Colors.BLUE, Colors.NEUTRAL,
     ],
     allowed_pieces: [
-      PieceIds.ID_1, PieceIds.ID_4, PieceIds.ID_6, PieceIds.ID_3,
+      PieceIds.ID_1, PieceIds.ID_4, PieceIds.ID_6, PieceIds.ID_10,
       PieceIds.ID_11,
     ],
   },

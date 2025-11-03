@@ -217,8 +217,7 @@ export function SettingsPopup({ onClose }: SettingsPopupProps) {
         {/* Footer */}
         <div className="mt-6 text-center">
           <pre className="text-[#777777] text-[10px]">
-{`SETTINGS SAVED
-PRESS ANY KEY TO CONTINUE`}
+
           </pre>
           <div className="text-[#AAFFEE] text-sm c64-blink mt-2">█</div>
         </div>

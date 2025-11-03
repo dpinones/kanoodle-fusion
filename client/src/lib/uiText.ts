@@ -34,8 +34,15 @@ export const KANOODLE_TEXT = {
       title: "KANOODLE FUSION",
       subtitle: "PUZZLE YOUR WAY THROUGH",
       playButton: "PLAY",
+      levelsButton: "LEVELS",
       tutorialButton: "TUTORIAL",
       shareButton: "SHARE ON X",
+    },
+    // Level select screen
+    levels: {
+      title: "SELECT LEVEL",
+      backButton: "BACK",
+      connectWallet: "CONNECT WALLET TO PLAY",
     },
     // Game screen
     game: {
@@ -96,8 +103,15 @@ export const KANOODLE_TEXT = {
       title: "KANOODLE FUSION",
       subtitle: "RESUELVE LOS PUZZLES",
       playButton: "JUGAR",
+      levelsButton: "NIVELES",
       tutorialButton: "TUTORIAL",
       shareButton: "COMPARTIR EN X",
+    },
+    // Level select screen
+    levels: {
+      title: "SELECCIONA NIVEL",
+      backButton: "VOLVER",
+      connectWallet: "CONECTA TU WALLET PARA JUGAR",
     },
     // Game screen
     game: {
@@ -158,8 +172,15 @@ export const KANOODLE_TEXT = {
       title: "KANOODLE FUSION",
       subtitle: "パズルをクリアしよう",
       playButton: "プレイ",
+      levelsButton: "レベル",
       tutorialButton: "チュートリアル",
       shareButton: "Xでシェア",
+    },
+    // Level select screen
+    levels: {
+      title: "レベルを選択",
+      backButton: "戻る",
+      connectWallet: "ウォレットを接続してプレイ",
     },
     // Game screen
     game: {

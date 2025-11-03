@@ -9,6 +9,7 @@ import { useAccount } from '@starknet-react/core';
 import { LoginScreen } from './components/LoginScreen';
 import { KanoodleHome } from './components/kanoodle/KanoodleHome';
 import { KanoodleGameScreen } from './components/kanoodle/KanoodleGameScreen';
+import { LevelSelect } from './components/kanoodle/LevelSelect';
 import { TutorialScreen } from './components/kanoodle/TutorialScreen';
 import { VictoryScreen } from './components/kanoodle/VictoryScreen';
 import { LanguageProvider } from './lib/LanguageContext';
@@ -88,6 +89,16 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <KanoodleHome />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Level Select Screen - Choose level */}
+      <Route
+        path="/levels"
+        element={
+          <ProtectedRoute>
+            <LevelSelect />
           </ProtectedRoute>
         }
       />

@@ -177,6 +177,19 @@ export function KanoodleHome() {
             </button>
           </div>
 
+          {/* Levels button */}
+          <div className="c64-border bg-[#6C5EB5]/90 p-1.5 sm:p-2">
+            <button
+              onClick={() => {
+                audioManager.playMenuNav();
+                navigate('/levels');
+              }}
+              className="c64-button w-full py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm bg-[#EEEE77] border-[#CCCC55]"
+            >
+              🎯 {text.levelsButton}
+            </button>
+          </div>
+
           {/* Tutorial button */}
           <div className="c64-border bg-[#6C5EB5]/90 p-1.5 sm:p-2">
             <button

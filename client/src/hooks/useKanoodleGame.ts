@@ -131,7 +131,7 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
 
       try {
         console.log('Starting game with LEVEL:', levelId);
-        let level = 1; // TODO:
+        let level = 50; // TODO:
 
         // Call the start_game function via account.execute
         const tx = await account.execute({

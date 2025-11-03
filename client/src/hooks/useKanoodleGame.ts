@@ -131,13 +131,12 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
 
       try {
         console.log('Starting game with LEVEL:', levelId);
-        let level = 50; // TODO:
 
         // Call the start_game function via account.execute
         const tx = await account.execute({
           contractAddress: KANOODLE_SYSTEM_ADDRESS,
           entrypoint: 'start_game',
-          calldata: [address, level],
+          calldata: [address, levelId],
         });
 
         console.log('Transaction sent:', tx.transaction_hash);

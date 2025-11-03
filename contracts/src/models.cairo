@@ -688,7 +688,7 @@ pub fn get_level(level_id: u8) -> Level {
             solution: array![
                 colors::RED, colors::RED, colors::ORANGE, colors::PURPLE, colors::RED, colors::RED,
                 colors::RED, colors::YELLOW, colors::BLUE, colors::BLUE, colors::GREEN,
-                colors::GREEN, colors::YELLOW, colors::PURPLE, colors::PURPLE, colors::YELLOW,
+                colors::GREEN, colors::YELLOW, colors::GREEN, colors::GREEN, colors::YELLOW,
             ]
                 .span(),
             allowed_pieces: array![

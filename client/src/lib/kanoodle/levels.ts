@@ -557,7 +557,7 @@ export const LEVELS: Record<number, Level> = {
       Colors.RED, Colors.RED, Colors.ORANGE, Colors.PURPLE,
       Colors.RED, Colors.RED, Colors.RED, Colors.YELLOW,
       Colors.BLUE, Colors.BLUE, Colors.GREEN, Colors.GREEN,
-      Colors.YELLOW, Colors.PURPLE, Colors.PURPLE, Colors.YELLOW,
+      Colors.YELLOW, Colors.GREEN, Colors.GREEN, Colors.YELLOW,
     ],
     allowed_pieces: [
       PieceIds.ID_1, PieceIds.ID_4, PieceIds.ID_2, PieceIds.ID_6,

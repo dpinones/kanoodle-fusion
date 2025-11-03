@@ -250,6 +250,14 @@ export function KanoodleGameScreen() {
 
   const handleFlip = () => {
     if (!selectedPiece) return;
+
+    // Only allow flip for pieces 4, 5, and 6
+    const flippablePieces = [4, 5, 6];
+    if (!flippablePieces.includes(selectedPiece.piece_id)) {
+      console.log(`Piece ${selectedPiece.piece_id} cannot be flipped`);
+      return;
+    }
+
     const currentFlipped = pieceTransformations[selectedPiece.piece_id]?.flipped ?? false;
 
     setPieceTransformations((prev) => ({

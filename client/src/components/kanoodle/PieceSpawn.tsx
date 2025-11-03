@@ -269,7 +269,7 @@ export function PieceSpawn({
                     onFlip();
                   }
                 }}
-                disabled={disabled}
+                disabled={disabled || ![4, 5, 6].includes(selectedPiece.piece_id)}
                 className="c64-button py-2 px-3 text-[10px] bg-[#8c28d8] border-[#6a1fa8] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ⇄ FLIP

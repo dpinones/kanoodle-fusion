@@ -19,6 +19,7 @@ interface PiecePreviewProps {
   cellSize?: number;
   onDragStart?: (e: React.DragEvent) => void;
   onDragEnd?: (e: React.DragEvent) => void;
+  pieceId?: number; // Optional piece ID to check if flippable
 }
 
 export function PiecePreview({
@@ -31,6 +32,7 @@ export function PiecePreview({
   cellSize = 50,
   onDragStart,
   onDragEnd,
+  pieceId,
 }: PiecePreviewProps) {
   const text = getKanoodleText().game;
   const transformedCells = transformPiece(cells, rotation, flipped);
@@ -100,9 +102,11 @@ export function PiecePreview({
             audioManager.playPieceRotate();
             onFlip();
           }}
-          disabled={cells.length === 0}
+          disabled={cells.length === 0 || (pieceId !== undefined && ![4, 5, 6].includes(pieceId))}
           className={`c64-button py-3 px-2 text-[10px] ${
-            cells.length === 0 ? 'bg-[#777777] border-[#333333]' : 'bg-[#CC44CC] border-[#8C28D8]'
+            cells.length === 0 || (pieceId !== undefined && ![4, 5, 6].includes(pieceId))
+              ? 'bg-[#777777] border-[#333333]'
+              : 'bg-[#CC44CC] border-[#8C28D8]'
           }`}
         >
           ⇄

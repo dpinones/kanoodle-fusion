@@ -10,12 +10,11 @@ import { PieceCell, RotationValue, Rotations } from './types';
  * Rotation is relative to piece origin (0,0)
  */
 function rotateCellClockwise(cell: PieceCell): PieceCell {
-  // Rotation matrix for 90° clockwise: (x, y) -> (y, -x)
-  // But we need to adjust for positive coordinates
-  // For a bounding box, we rotate around center
+  // Rotation matrix for 90° clockwise: (x, y) -> (-y, x)
+  // This works correctly with normalization
   return {
-    x: cell.y,
-    y: -cell.x,
+    x: -cell.y,
+    y: cell.x,
     color: cell.color,
   };
 }

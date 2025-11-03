@@ -511,7 +511,7 @@ pub fn get_level(level_id: u8) -> Level {
             ]
                 .span(),
             allowed_pieces: array![
-                piece::ID_4, piece::ID_6, piece::ID_10, piece::ID_5, piece::ID_2, piece::ID_11,
+                piece::ID_4, piece::ID_6, piece::ID_10, piece::ID_5, piece::ID_9, piece::ID_11,
             ]
                 .span(),
         }
@@ -536,7 +536,7 @@ pub fn get_level(level_id: u8) -> Level {
             solution: array![
                 colors::PURPLE, colors::ORANGE, colors::ORANGE, colors::GREEN, colors::PURPLE,
                 colors::ORANGE, colors::GREEN, colors::GREEN, colors::PURPLE, colors::ORANGE,
-                colors::GREEN, colors::YELLOW, colors::YELLOW, colors::RED, colors::ORANGE,
+                colors::GREEN, colors::YELLOW, colors::PURPLE, colors::RED, colors::ORANGE,
                 colors::ORANGE,
             ]
                 .span(),

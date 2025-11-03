@@ -35,7 +35,7 @@ export function PiecePreview({
   pieceId,
 }: PiecePreviewProps) {
   const text = getKanoodleText().game;
-  const transformedCells = transformPiece(cells, rotation, flipped);
+  const transformedCells = transformPiece(cells, rotation, flipped, pieceId);
 
   return (
     <div className="c64-border bg-[#6C5EB5] p-4">

@@ -7,7 +7,7 @@ import { useRef } from 'react';
 import { Piece } from './Piece';
 import { gamePieceToCells, type RotationValue } from '../../lib/kanoodle/types';
 import { audioManager } from '../../lib/audioManager';
-import { rotatePiece, flipPiece } from '../../lib/kanoodle/pieceUtils';
+import { transformPiece } from '../../lib/kanoodle/pieceUtils';
 import type { GamePiece } from '../../lib/kanoodle/types';
 import { getKanoodleText } from '../../lib/uiText';
 
@@ -75,12 +75,13 @@ export function PieceSpawn({
           let cells = gamePieceToCells(piece);
           const transformation = pieceTransformations[piece.piece_id];
           if (transformation) {
-            // Apply rotation
-            cells = rotatePiece(cells, transformation.rotation);
-            // Apply flip
-            if (transformation.flipped) {
-              cells = flipPiece(cells);
-            }
+            // Use transformPiece to handle special cases (like piece 6)
+            cells = transformPiece(
+              cells,
+              transformation.rotation,
+              transformation.flipped,
+              piece.piece_id
+            );
           }
 
           return (

@@ -77,25 +77,86 @@ export function flipPiece(cells: PieceCell[]): PieceCell[] {
  * @param cells - Original piece cells
  * @param rotation - Rotation value
  * @param flipped - Whether to flip horizontally
+ * @param pieceId - Optional piece ID for special case handling
  * @returns Transformed cells
  */
 export function transformPiece(
   cells: PieceCell[],
   rotation: RotationValue,
-  flipped: boolean
+  flipped: boolean,
+  pieceId?: number
 ): PieceCell[] {
   let transformed = cells;
 
-  // Apply flip first, then rotation
-  if (flipped) {
-    transformed = flipPiece(transformed);
-  }
+  // Special case for piece 6 (L-shaped red) when flipped at 90° or 270°
+  // For this piece, we need to invert the rotation order
+  const isPiece6FlippedAt90or270 =
+    pieceId === 6 &&
+    flipped &&
+    (rotation === Rotations.DEG_90 || rotation === Rotations.DEG_270);
 
-  if (rotation !== Rotations.DEG_0) {
+  if (isPiece6FlippedAt90or270) {
+    // For piece 6 at these angles, apply rotation first, then flip
     transformed = rotatePiece(transformed, rotation);
+    transformed = flipPiece(transformed);
+  } else {
+    // Standard order: flip first, then rotation
+    if (flipped) {
+      transformed = flipPiece(transformed);
+    }
+    if (rotation !== Rotations.DEG_0) {
+      transformed = rotatePiece(transformed, rotation);
+    }
   }
 
   return transformed;
+}
+
+/**
+ * Adjust rotation and flip parameters for contract based on piece-specific behavior
+ * The contract applies transformations in a fixed order (flip first, then rotation)
+ * But piece 6 at 90° or 270° needs special handling on the client
+ * This function converts client transformations back to contract parameters
+ *
+ * @param pieceId - Piece ID
+ * @param rotation - Client rotation value
+ * @param flipped - Client flipped state
+ * @returns Adjusted parameters for contract
+ */
+export function adjustParamsForContract(
+  pieceId: number,
+  rotation: RotationValue,
+  flipped: boolean
+): { rotation: RotationValue; flipped: boolean } {
+  // Special case for piece 6 when flipped at 90° or 270°
+  // The client applies rotation-then-flip for visual correctness
+  // But the contract expects flip-then-rotation
+  // We need to convert back to the equivalent contract parameters
+  const isPiece6FlippedAt90or270 =
+    pieceId === 6 &&
+    flipped &&
+    (rotation === Rotations.DEG_90 || rotation === Rotations.DEG_270);
+
+  if (isPiece6FlippedAt90or270) {
+    // For piece 6 at these angles, the visual result of:
+    // Client: rotate(R) then flip
+    // Should match contract's: flip then rotate(R')
+    // Where R' is the inverse rotation
+
+    // The inverse rotations are:
+    // 90° -> 270° (and vice versa)
+    const invertedRotation = rotation === Rotations.DEG_90
+      ? Rotations.DEG_270
+      : Rotations.DEG_90;
+
+    return {
+      rotation: invertedRotation,
+      flipped: flipped,
+    };
+  }
+
+  // For all other cases, use parameters as-is
+  return { rotation, flipped };
 }
 
 /**

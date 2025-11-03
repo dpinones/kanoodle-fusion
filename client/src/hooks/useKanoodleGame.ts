@@ -16,6 +16,7 @@ import type {
 } from '../lib/kanoodle/types';
 import { getLevel } from '../lib/kanoodle/levels';
 import { getPieceDefinition as getLocalPieceDefinition } from '../lib/kanoodle/pieces';
+import { adjustParamsForContract } from '../lib/kanoodle/pieceUtils';
 
 // Use ABI from manifest - Updated to match actual contract functions
 const KANOODLE_ABI = KANOODLE_SYSTEM_ABI || [
@@ -239,13 +240,17 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
       setError(null);
 
       try {
-        console.log('Placing piece:', { pieceId, x, y, rotation, flipped });
+        console.log('Placing piece (client params):', { pieceId, x, y, rotation, flipped });
+
+        // Adjust parameters for contract based on piece-specific transformations
+        const adjustedParams = adjustParamsForContract(pieceId, rotation, flipped);
+        console.log('Adjusted params for contract:', adjustedParams);
 
         // Call place_piece via account.execute
         const tx = await account.execute({
           contractAddress: KANOODLE_SYSTEM_ADDRESS,
           entrypoint: 'place_piece',
-          calldata: [gameId, address, pieceId, x, y, rotation, flipped ? 1 : 0],
+          calldata: [gameId, address, pieceId, x, y, adjustedParams.rotation, adjustedParams.flipped ? 1 : 0],
         });
 
         console.log('Transaction sent:', tx.transaction_hash);

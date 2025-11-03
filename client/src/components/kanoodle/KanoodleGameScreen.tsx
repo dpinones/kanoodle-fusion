@@ -282,7 +282,7 @@ export function KanoodleGameScreen() {
 
     // Predict if this placement will complete the level BEFORE placing
     const pieceCells = gamePieceToCells(selectedPiece);
-    const transformedCells = transformPiece(pieceCells, pieceRotation, pieceFlipped);
+    const transformedCells = transformPiece(pieceCells, pieceRotation, pieceFlipped, selectedPiece.piece_id);
 
     // Convert BigInt to Number for prediction
     const currentBoardNumbers = gameState.current_solution.map(c => Number(c));
@@ -593,7 +593,7 @@ export function KanoodleGameScreen() {
                   onBoardDrop={handleBoardDrop}
                   onBoardDragOver={handleBoardDragOver}
                   highlightErrors={false}
-                  previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped) : null}
+                  previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped, selectedPiece.piece_id) : null}
                   previewPosition={dragPreviewPosition}
                 />
               </div>

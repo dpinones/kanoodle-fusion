@@ -89,14 +89,16 @@ export function KanoodleGameScreen() {
   // Redirect to home if no gameId
   useEffect(() => {
     if (!gameId) {
-      console.error('No gameId in URL, redirecting to home');
-      navigate('/home');
+      console.error('No gameId in URL');
+      // Don't redirect - just log the error
+      // navigate('/home');
     }
-  }, [gameId, navigate]);
+  }, [gameId]);
 
   // Load game state and level data when gameId is available
   useEffect(() => {
-    if (!gameId || !address) return;
+    if (!gameId) return;
+    // Skip address check - allow loading without wallet
 
     const loadGameData = async () => {
       console.log('Loading game data for gameId:', gameId);
@@ -106,7 +108,7 @@ export function KanoodleGameScreen() {
     };
 
     loadGameData();
-  }, [gameId, address, refreshGameState]);
+  }, [gameId, refreshGameState]);
 
   // Load level data when game state is loaded
   useEffect(() => {
@@ -496,16 +498,17 @@ export function KanoodleGameScreen() {
     }
   };
 
-  if (!address) {
-    return (
-      <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
-        <div className="text-center text-[#AAFFEE] c64-text-glow">
-          <p className="text-xl mb-4">CONNECT WALLET</p>
-          <p className="text-sm">TO START PLAYING</p>
-        </div>
-      </div>
-    );
-  }
+  // Skip wallet check - allow playing without wallet connection
+  // if (!address) {
+  //   return (
+  //     <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
+  //       <div className="text-center text-[#AAFFEE] c64-text-glow">
+  //         <p className="text-xl mb-4">CONNECT WALLET</p>
+  //         <p className="text-sm">TO START PLAYING</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (isLoading && !gameState) {
     return (

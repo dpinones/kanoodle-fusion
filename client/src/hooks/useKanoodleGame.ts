@@ -375,12 +375,27 @@ export function useKanoodleGame(gameId?: number): UseKanoodleGameReturn {
 
   // Refresh game state from contract
   const refreshGameState = useCallback(async () => {
-    if (!contract || !address || !gameId) return;
+    if (!gameId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
+      // If no wallet connected, create a mock game state for preview
+      if (!contract || !address) {
+        console.log('No wallet connected - creating mock game state for gameId:', gameId);
+        const mockState: KanoodleGame = {
+          game_id: gameId,
+          player: '0x0' as `0x${string}`,
+          level_id: 1, // Default to level 1
+          current_solution: new Array(16).fill(0),
+          placed_piece_ids: [],
+        };
+        setGameState(mockState);
+        setIsLoading(false);
+        return;
+      }
+
       const state = await contract.get_game_state(gameId, address);
       console.log('=== RAW game state from contract ===');
       console.log('Full state:', state);

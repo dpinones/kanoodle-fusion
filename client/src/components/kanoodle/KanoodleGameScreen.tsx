@@ -40,7 +40,6 @@ export function KanoodleGameScreen() {
   const [nextLevelNumber, setNextLevelNumber] = useState<number | null>(null);
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
   const [dragPreviewPosition, setDragPreviewPosition] = useState<{ x: number; y: number } | null>(null);
-  const textLogin = getKanoodleText().login;
 
   // Wrapper to log state changes
   const setShowLevelComplete = (value: boolean) => {
@@ -522,120 +521,200 @@ export function KanoodleGameScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-[#6C5EB5] c64-screen relative overflow-hidden p-4 md:p-8">
-      {/* C64 Border */}
-      <div className="absolute inset-0 border-[32px] border-[#A4A0E4] pointer-events-none"></div>
+    <div className="h-screen bg-[#6C5EB5] c64-screen relative overflow-hidden p-2 md:p-8">
+      {/* C64 Border - SMALLER ON MOBILE */}
+      <div className="absolute inset-0 border-[8px] lg:border-[32px] border-[#A4A0E4] pointer-events-none"></div>
 
-      {/* Rainbow stripe - top */}
-      <div className="absolute top-8 left-0 right-0 c64-rainbow z-10"></div>
+      {/* Rainbow stripe - top - SMALLER ON MOBILE */}
+      <div className="absolute top-2 lg:top-8 left-0 right-0 c64-rainbow z-10"></div>
 
-      {/* Right buttons - top right corner */}
-      <div className="absolute top-12 right-12 flex gap-2 sm:gap-3 items-center z-50">
+      {/* Right buttons - top right corner - EXTRA SMALL ON MOBILE */}
+      <div className="absolute top-3 right-3 lg:top-12 lg:right-12 flex gap-1 lg:gap-3 items-center z-50">
         <ConnectWallet />
         <button
           onClick={() => {
             audioManager.playMenuNav();
             setShowSettings(true);
           }}
-          className="c64-button py-2 px-4 text-xs"
+          className="c64-button py-0.5 px-1.5 lg:py-2 lg:px-4 text-[10px] lg:text-xs"
           title="Settings"
         >
-          {textLogin.settingsButton}
+          ⚙
         </button>
       </div>
 
-      {/* Home button and Level info - aligned with top buttons */}
-      <div className="absolute top-12 left-12 flex items-center gap-3 z-50">
+      {/* Home button and Level info - EXTRA SMALL ON MOBILE */}
+      <div className="absolute top-3 left-3 lg:top-12 lg:left-12 flex items-center gap-1 lg:gap-3 z-50">
         <button
           onClick={handleBackToHome}
-          className="c64-button py-2 px-5 text-xs bg-[#00CC55] border-[#00B428]"
+          className="c64-button py-0.5 px-1.5 lg:py-2 lg:px-5 text-[7px] lg:text-xs bg-[#00CC55] border-[#00B428]"
         >
            {text.homeButton}
         </button>
-        <div className="bg-[#000000] border-2 border-[#A4A0E4] px-4 py-2">
-          <span className="text-xs text-[#EEEE77] c64-text-glow font-bold">
+        <div className="bg-[#000000] border border-[#A4A0E4] px-1.5 py-0.5 lg:border-2 lg:px-4 lg:py-2">
+          <span className="text-[7px] lg:text-xs text-[#EEEE77] c64-text-glow font-bold">
             {text.level} {gameState?.level_id || '?'}
           </span>
         </div>
       </div>
 
-      {/* Main game area - 3 Column Layout - C64 Style */}
-      <div className="max-w-7xl mx-auto relative z-20 flex items-center min-h-[calc(100vh-200px)]">
-        <div className="w-full">
-          <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-          {/* Left: Piece Spawn with Controls - flexible width */}
-          <div className="flex-1">
-            <PieceSpawn
-              availablePieces={availablePieces}
-              placedPieceIds={gameState?.placed_piece_ids || []}
-              selectedPiece={selectedPiece}
-              pieceTransformations={pieceTransformations}
-              onPieceSelect={handlePieceSelect}
-              onRotate={handleRotate}
-              onFlip={handleFlip}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              disabled={isLoading}
-            />
-          </div>
+      {/* Main game area - Responsive Layout */}
+      <div className="max-w-7xl mx-auto relative z-20 flex lg:items-center h-[calc(100vh-60px)] lg:min-h-[calc(100vh-200px)]">
+        <div className="w-full h-full lg:h-auto">
+          {/* MOBILE LAYOUT (< lg breakpoint) - Board in center, Pieces at bottom near rainbow */}
+          <div className="lg:hidden flex flex-col justify-between h-full py-2">
+            {/* Top spacer - pushes content down */}
+            <div className="flex-1"></div>
 
-          {/* Center: Your Board - fixed width, full height */}
-          <div className="w-full lg:w-[280px] flex">
-            <div className="c64-border bg-[#6C5EB5] p-3 flex flex-col flex-1">
-              {/* Header - C64 Style */}
-              <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-3">
-                <span className="text-[10px] text-black font-bold">{text.yourBoard}</span>
-              </div>
-
-              <div className="flex justify-center items-center flex-1">
-                <KanoodleBoard
-                  currentSolution={gameState?.current_solution || new Array(16).fill(0)}
-                  targetSolution={currentLevel?.solution || new Array(16).fill(0)}
-                  cellSize={45}
-                  onCellClick={handleBoardClick}
-                  onBoardDrop={handleBoardDrop}
-                  onBoardDragOver={handleBoardDragOver}
-                  highlightErrors={false}
-                  previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped, selectedPiece.piece_id) : null}
-                  previewPosition={dragPreviewPosition}
-                />
-              </div>
-
-              {/* Undo and Clear buttons */}
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={handleUndo}
-                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#0088FF] border-[#006CD8]"
-                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
-                >
-                  {text.undoButton}
-                </button>
-                <button
-                  onClick={handleClearBoard}
-                  className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
-                  disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
-                >
-                   {text.clearButton}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Target Pattern - fixed width matching Your Board, full height */}
-          <div className="w-full lg:w-[280px] flex">
-            <div className="flex-1">
+            {/* Target Board - MOBILE ONLY - Always visible */}
+            <div className="flex-shrink-0 mb-2">
               <TargetBoard
                 targetSolution={currentLevel?.solution || new Array(16).fill(0)}
-                cellSize={45}
+                cellSize={28}
+                compact={true}
+              />
+            </div>
+
+            {/* Middle: Your Board - COMPACT */}
+            <div className="flex-shrink-0">
+              <div className="c64-border bg-[#6C5EB5] p-1">
+                {/* Header centered */}
+                <div className="flex items-center justify-center mb-1">
+                  <div className="bg-[#A4A0E4] px-1 py-0.5 border border-[#000000]">
+                    <span className="text-[7px] text-black font-bold">{text.yourBoard}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <KanoodleBoard
+                    currentSolution={gameState?.current_solution || new Array(16).fill(0)}
+                    targetSolution={currentLevel?.solution || new Array(16).fill(0)}
+                    cellSize={28}
+                    onCellClick={handleBoardClick}
+                    onBoardDrop={handleBoardDrop}
+                    onBoardDragOver={handleBoardDragOver}
+                    highlightErrors={false}
+                    previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped, selectedPiece.piece_id) : null}
+                    previewPosition={dragPreviewPosition}
+                  />
+                </div>
+
+                {/* Undo and Clear buttons - COMPACT */}
+                <div className="mt-1 flex gap-1">
+                  <button
+                    onClick={handleUndo}
+                    className="flex-1 c64-button py-0.5 px-1 text-[7px] bg-[#0088FF] border-[#006CD8]"
+                    disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                  >
+                    {text.undoButton}
+                  </button>
+                  <button
+                    onClick={handleClearBoard}
+                    className="flex-1 c64-button py-0.5 px-1 text-[7px] bg-[#880000] border-[#660000]"
+                    disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                  >
+                    {text.clearButton}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Small spacer between board and pieces */}
+            <div className="flex-shrink-0 h-2"></div>
+
+            {/* Bottom: Pieces Section - COMPACT, NO SCROLL - Near rainbow */}
+            <div className="flex-shrink-0 mb-1">
+              <PieceSpawn
+                availablePieces={availablePieces}
+                placedPieceIds={gameState?.placed_piece_ids || []}
+                selectedPiece={selectedPiece}
+                pieceTransformations={pieceTransformations}
+                onPieceSelect={handlePieceSelect}
+                onRotate={handleRotate}
+                onFlip={handleFlip}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                disabled={isLoading}
               />
             </div>
           </div>
-        </div>
+
+          {/* DESKTOP LAYOUT (>= lg breakpoint) - Original 3 column layout */}
+          <div className="hidden lg:flex flex-row gap-4 items-stretch">
+            {/* Left: Piece Spawn with Controls - flexible width */}
+            <div className="flex-1">
+              <PieceSpawn
+                availablePieces={availablePieces}
+                placedPieceIds={gameState?.placed_piece_ids || []}
+                selectedPiece={selectedPiece}
+                pieceTransformations={pieceTransformations}
+                onPieceSelect={handlePieceSelect}
+                onRotate={handleRotate}
+                onFlip={handleFlip}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Center: Your Board - fixed width, full height */}
+            <div className="w-[280px] flex">
+              <div className="c64-border bg-[#6C5EB5] p-3 flex flex-col flex-1">
+                {/* Header - C64 Style */}
+                <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-3">
+                  <span className="text-[10px] text-black font-bold">{text.yourBoard}</span>
+                </div>
+
+                <div className="flex justify-center items-center flex-1">
+                  <KanoodleBoard
+                    currentSolution={gameState?.current_solution || new Array(16).fill(0)}
+                    targetSolution={currentLevel?.solution || new Array(16).fill(0)}
+                    cellSize={45}
+                    onCellClick={handleBoardClick}
+                    onBoardDrop={handleBoardDrop}
+                    onBoardDragOver={handleBoardDragOver}
+                    highlightErrors={false}
+                    previewPiece={selectedPiece ? transformPiece(gamePieceToCells(selectedPiece), pieceRotation, pieceFlipped, selectedPiece.piece_id) : null}
+                    previewPosition={dragPreviewPosition}
+                  />
+                </div>
+
+                {/* Undo and Clear buttons */}
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={handleUndo}
+                    className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#0088FF] border-[#006CD8]"
+                    disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                  >
+                    {text.undoButton}
+                  </button>
+                  <button
+                    onClick={handleClearBoard}
+                    className="flex-1 c64-button py-2 px-4 text-[10px] bg-[#880000] border-[#660000]"
+                    disabled={isLoading || !gameState?.placed_piece_ids || gameState.placed_piece_ids.length === 0}
+                  >
+                    {text.clearButton}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Target Pattern - fixed width matching Your Board, full height */}
+            <div className="w-[280px] flex">
+              <div className="flex-1">
+                <TargetBoard
+                  targetSolution={currentLevel?.solution || new Array(16).fill(0)}
+                  cellSize={45}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Rainbow stripe - bottom */}
-      <div className="absolute bottom-8 left-0 right-0 c64-rainbow z-10"></div>
+
+      {/* Rainbow stripe - bottom - SMALLER ON MOBILE */}
+      <div className="absolute bottom-2 lg:bottom-8 left-0 right-0 c64-rainbow z-10"></div>
 
       {/* CRT scanlines */}
       <div className="absolute inset-0 pointer-events-none">

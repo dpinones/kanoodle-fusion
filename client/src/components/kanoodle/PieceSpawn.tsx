@@ -51,19 +51,19 @@ export function PieceSpawn({
   const text = getKanoodleText().game;
 
   return (
-    <div className="c64-border bg-[#6C5EB5] p-4">
-      {/* Header - C64 Style */}
-      <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-4">
+    <div className="c64-border bg-[#6C5EB5] p-1 lg:p-4 flex flex-col w-full lg:h-full">
+      {/* Header - C64 Style - COMPACT ON MOBILE */}
+      <div className="bg-[#A4A0E4] px-1 py-0.5 lg:px-2 lg:py-1 border-b lg:border-b-2 border-[#000000] mb-1 lg:mb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-black font-bold">{text.pieces}</span>
-          <span className="text-[8px] text-black">
+          <span className="text-[7px] lg:text-[10px] text-black font-bold">{text.pieces}</span>
+          <span className="text-[6px] lg:text-[8px] text-black">
             {availablePieces.length - placedPieceIds.length} / {availablePieces.length}
           </span>
         </div>
       </div>
 
-      {/* Pieces grid - C64 Style */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto p-2">
+      {/* Pieces grid - C64 Style - COMPACT ON MOBILE, NO SCROLL */}
+      <div className="grid grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1 lg:gap-3 p-1 lg:p-2 flex-shrink-0">
         {availablePieces.map((piece) => {
           const isPlaced = placedPieceIds.includes(piece.piece_id);
           const isSelected = selectedPiece?.piece_id === piece.piece_id;
@@ -87,7 +87,7 @@ export function PieceSpawn({
           return (
             <div
               key={piece.piece_id}
-              className={`relative bg-[#000000] border-2 p-3 transition-all ${
+              className={`relative bg-[#000000] border lg:border-2 p-1 lg:p-3 transition-all ${
                 isPlaced || disabled
                   ? 'opacity-30 cursor-not-allowed border-[#555555]'
                   : isSelected
@@ -191,32 +191,32 @@ export function PieceSpawn({
               }}
               onDragEnd={onDragEnd}
             >
-              {/* Piece ID badge - C64 Style */}
-              <div className="absolute top-1 right-1 bg-[#EEEE77] text-black text-[8px] font-bold w-5 h-5 flex items-center justify-center border-2 border-[#000000]">
+              {/* Piece ID badge - C64 Style - SMALLER ON MOBILE */}
+              <div className="absolute top-0.5 right-0.5 lg:top-1 lg:right-1 bg-[#EEEE77] text-black text-[6px] lg:text-[8px] font-bold w-3 h-3 lg:w-5 lg:h-5 flex items-center justify-center border lg:border-2 border-[#000000]">
                 {piece.piece_id}
               </div>
 
-              {/* Piece visual */}
+              {/* Piece visual - SMALLER ON MOBILE */}
               <div
                 ref={(el) => { pieceRefs.current[piece.piece_id] = el; }}
-                className="flex items-center justify-center min-h-[80px]"
+                className="flex items-center justify-center min-h-[50px] lg:min-h-[80px]"
               >
                 <Piece
                   cells={cells}
-                  cellSize={cellSize}
+                  cellSize={20}
                   showGrid={true}
                   opacity={isPlaced ? 0.3 : 1}
                 />
               </div>
 
-              {/* Placed indicator - C64 Style with strikethrough */}
+              {/* Placed indicator - C64 Style with strikethrough - SMALLER ON MOBILE */}
               {isPlaced && (
                 <>
                   {/* Diagonal strikethrough line */}
                   <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="absolute bg-[#880000] h-1"
+                        className="absolute bg-[#880000] h-0.5 lg:h-1"
                         style={{
                           width: '141.4%', // sqrt(2) * 100% to cover diagonal
                           transform: 'rotate(-45deg)',
@@ -225,8 +225,8 @@ export function PieceSpawn({
                       />
                     </div>
                   </div>
-                  {/* PLACED badge */}
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  {/* PLACED badge - HIDDEN ON MOBILE */}
+                  <div className="hidden lg:flex absolute inset-0 items-center justify-center">
                     <div className="bg-[#880000] text-[#AAFFEE] px-3 py-1 border-2 border-[#000000] font-bold text-[8px] shadow-lg">
                       PLACED
                     </div>
@@ -238,17 +238,17 @@ export function PieceSpawn({
         })}
       </div>
 
-      {/* Instructions & Controls - C64 Style */}
-      <div className="mt-4 space-y-3">
+      {/* Instructions & Controls - C64 Style - COMPACT ON MOBILE */}
+      <div className="mt-1 lg:mt-4 space-y-1 lg:space-y-3 flex-shrink-0">
         {selectedPiece ? (
           <>
-            {/* Selected piece info */}
-            <div className="text-center text-[10px] text-[#EEEE77] font-bold">
-              PIECE {selectedPiece.piece_id} SELECTED
+            {/* Selected piece info - SMALLER ON MOBILE */}
+            <div className="text-center text-[7px] lg:text-[10px] text-[#EEEE77] font-bold">
+              PIECE {selectedPiece.piece_id}
             </div>
 
-            {/* Control buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Control buttons - COMPACT ON MOBILE */}
+            <div className="grid grid-cols-2 gap-1 lg:gap-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -258,7 +258,7 @@ export function PieceSpawn({
                   }
                 }}
                 disabled={disabled}
-                className="c64-button py-2 px-3 text-[10px] bg-[#0088FF] border-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="c64-button py-1 px-1 lg:py-2 lg:px-3 text-[7px] lg:text-[10px] bg-[#0088FF] border-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ↻ ROTATE
               </button>
@@ -271,20 +271,15 @@ export function PieceSpawn({
                   }
                 }}
                 disabled={disabled || ![4, 5, 6].includes(selectedPiece.piece_id)}
-                className="c64-button py-2 px-3 text-[10px] bg-[#8c28d8] border-[#6a1fa8] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="c64-button py-1 px-1 lg:py-2 lg:px-3 text-[7px] lg:text-[10px] bg-[#8c28d8] border-[#6a1fa8] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ⇄ FLIP
               </button>
             </div>
-
-            {/* Drag hint */}
-            <div className="text-center text-[8px] text-[#AAFFEE]">
-              
-            </div>
           </>
         ) : (
-          <div className="text-center text-[8px] text-[#BBBBBB]">
-            CLICK TO SELECT A PIECE
+          <div className="text-center text-[6px] lg:text-[8px] text-[#BBBBBB]">
+            TAP A PIECE
           </div>
         )}
       </div>

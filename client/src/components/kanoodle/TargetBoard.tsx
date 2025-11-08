@@ -12,11 +12,13 @@ import { getKanoodleText } from '../../lib/uiText';
 interface TargetBoardProps {
   targetSolution: number[];  // 16 cells with target colors
   cellSize?: number;
+  compact?: boolean; // For mobile compact view
 }
 
 export const TargetBoard = memo(function TargetBoard({
   targetSolution,
   cellSize = 50,
+  compact = false,
 }: TargetBoardProps) {
   const [colorblindMode, setColorblindMode] = useState(() => {
     const saved = localStorage.getItem('colorblindMode');
@@ -42,10 +44,10 @@ export const TargetBoard = memo(function TargetBoard({
   const text = getKanoodleText().game;
 
   return (
-    <div className="c64-border bg-[#6C5EB5] p-3 flex flex-col h-full">
-      {/* Header - C64 Style */}
-      <div className="bg-[#A4A0E4] px-2 py-1 border-b-2 border-[#000000] mb-3">
-        <span className="text-[10px] text-black font-bold">{text.targetPattern}</span>
+    <div className={`c64-border bg-[#6C5EB5] ${compact ? 'p-1' : 'p-3'} flex flex-col ${compact ? '' : 'h-full'}`}>
+      {/* Header - C64 Style - Compact on mobile */}
+      <div className={`bg-[#A4A0E4] ${compact ? 'px-1 py-0.5 border border-[#000000] mb-1' : 'px-2 py-1 border-b-2 border-[#000000] mb-3'} flex items-center justify-center`}>
+        <span className={`${compact ? 'text-[7px]' : 'text-[10px]'} text-black font-bold`}>{text.targetPattern}</span>
       </div>
 
       {/* Board container - C64 Style */}

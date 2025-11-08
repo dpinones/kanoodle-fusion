@@ -116,7 +116,7 @@ export function ConnectWallet() {
     return (
       <button
         onClick={handleConnect}
-        className="c64-button py-2 px-4 text-xs bg-[#00CC55] border-[#00B428]"
+        className="c64-button py-0.5 px-1.5 lg:py-2 lg:px-4 text-[7px] lg:text-xs bg-[#00CC55] border-[#00B428]"
       >
         CONNECT
       </button>
@@ -131,9 +131,9 @@ export function ConnectWallet() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="c64-button py-2 px-4 text-xs flex items-center gap-2 bg-[#0088FF] border-[#006CD8]"
+        className="c64-button py-0.5 px-1.5 lg:py-2 lg:px-4 text-[7px] lg:text-xs flex items-center gap-1 lg:gap-2 bg-[#0088FF] border-[#006CD8]"
       >
-        <div className="w-2 h-2 bg-[#00CC55] rounded-full animate-pulse" />
+        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-[#00CC55] rounded-full animate-pulse" />
         <span>{displayText}</span>
         <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
       </button>

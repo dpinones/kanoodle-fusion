@@ -1,83 +1,13 @@
-import { AccountInterface, Call } from 'starknet';
-
 /**
- * Executes a transaction on Starknet and waits for confirmation.
- *
- * This helper function simplifies the process of executing transactions by:
- * - Executing the transaction call(s)
- * - Logging the transaction hash
- * - Waiting for transaction confirmation
- * - Checking transaction execution status (success vs reverted)
- * - Throwing an error if the transaction reverted
- * - Providing optional labeled logging for different transaction types
- *
- * @param account - The Starknet account interface to execute the transaction from
- * @param calls - The transaction call(s) to execute (single Call or array of Calls)
- * @param label - Optional label for logging (e.g., "Place Piece", "Start Game")
- * @returns The transaction result from account.execute()
- * @throws Error if the transaction execution reverted
- *
- * @example
- * ```typescript
- * const result = await executeTx(
- *   account,
- *   {
- *     contractAddress: contractAddr,
- *     entrypoint: 'place_piece',
- *     calldata: [gameId, pieceId, x, y, rotation, flipped]
- *   },
- *   'Place Piece Transaction'
- * );
- * ```
+ * Utility functions for Kanoodle Fusion
+ * Frontend-only version (no blockchain integration)
  */
-export async function executeTx(
-  account: AccountInterface,
-  calls: Call | Call[],
-  label?: string
-) {
-  if (label) {
-    console.log(`=== ${label} ===`);
-  }
-
-  const tx = await account.execute(calls);
-  console.log(`Tx hash: ${tx.transaction_hash}`);
-
-  const receipt = await account.waitForTransaction(tx.transaction_hash);
-  console.log('Tx confirmed!');
-
-  // Check if the transaction execution was successful
-  // In Starknet, a transaction can be "confirmed" (included in a block) even if it reverted
-  if (receipt.isReverted()) {
-    const revertReason = (receipt as any).revert_reason || 'Transaction execution failed';
-    console.error('Transaction reverted:', revertReason);
-    throw new Error(revertReason);
-  }
-
-  return tx;
-}
 
 /**
- * Parses contract error messages and returns user-friendly error descriptions.
+ * Parses error messages and returns user-friendly error descriptions.
  *
- * Handles common contract error patterns including:
- * - Game state errors
- * - Piece placement errors
- * - Validation errors
- * - Transaction errors
- * - Generic fallback for unknown errors
- *
- * @param err - The error object from a contract call
+ * @param err - The error object
  * @returns A user-friendly error message string
- *
- * @example
- * ```typescript
- * try {
- *   await contract.execute(...);
- * } catch (err) {
- *   const message = parseContractError(err);
- *   console.error(message);
- * }
- * ```
  */
 export function parseContractError(err: any): string {
   // Return generic message if no error message exists

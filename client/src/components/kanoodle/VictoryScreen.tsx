@@ -5,7 +5,6 @@
 
 import { useNavigate } from 'react-router-dom';
 import { SettingsPopup } from '../SettingsPopup';
-import { ConnectWallet } from './ConnectWallet';
 import { audioManager } from '../../lib/audioManager';
 import { useState } from 'react';
 
@@ -38,7 +37,6 @@ export function VictoryScreen() {
 
       {/* Top right buttons */}
       <div className="absolute top-6 sm:top-12 right-6 sm:right-12 z-20 flex gap-2 sm:gap-3">
-        <ConnectWallet />
         <button
           onClick={() => {
             audioManager.playMenuNav();

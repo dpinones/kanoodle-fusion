@@ -3,47 +3,21 @@
  * Shows a grid of all 50 levels
  */
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@starknet-react/core';
 import { getKanoodleText } from '../../lib/uiText';
 import { audioManager } from '../../lib/audioManager';
-import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 
 const TOTAL_LEVELS = 50;
 
 export function LevelSelect() {
   const navigate = useNavigate();
-  const { address } = useAccount();
-  const [isCreatingGame, setIsCreatingGame] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const text = getKanoodleText().levels;
 
-  const { startGame, error } = useKanoodleGame();
-
-  const handleLevelClick = async (levelId: number) => {
-    if (!address || isCreatingGame) return;
-
-    setSelectedLevel(levelId);
-    setIsCreatingGame(true);
+  const handleLevelClick = (levelId: number) => {
     audioManager.playButtonClick();
-
-    try {
-      console.log('Creating game for level:', levelId);
-      const gameId = await startGame(levelId);
-
-      if (gameId) {
-        console.log('Game created successfully:', gameId);
-        navigate(`/game/${gameId}`);
-      } else {
-        console.error('Failed to create game - no gameId returned');
-      }
-    } catch (err) {
-      console.error('Error creating game:', err);
-    } finally {
-      setIsCreatingGame(false);
-      setSelectedLevel(null);
-    }
+    console.log('Starting level:', levelId);
+    // Navigate directly to the level
+    navigate(`/level/${levelId}`);
   };
 
   const handleBack = () => {
@@ -87,50 +61,26 @@ export function LevelSelect() {
         {/* Level grid */}
         <div className="w-full max-w-5xl">
           <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 sm:gap-3 p-4">
-            {levels.map((level) => {
-              const isSelected = selectedLevel === level;
-              const isDisabled = !address || isCreatingGame;
-
-              return (
+            {levels.map((level) => (
                 <button
                   key={level}
                   onClick={() => handleLevelClick(level)}
-                  disabled={isDisabled}
-                  className={`c64-border aspect-square flex items-center justify-center text-xs sm:text-sm font-bold transition-all ${
-                    isSelected
-                      ? 'bg-[#EEEE77] text-black border-[#CCCC55] scale-110'
-                      : 'bg-[#6C5EB5] text-[#AAFFEE] c64-text-glow border-[#A4A0E4] hover:bg-[#8C7ED5] hover:scale-105'
-                  } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  className="c64-border aspect-square flex items-center justify-center text-xs sm:text-sm font-bold transition-all bg-[#6C5EB5] text-[#AAFFEE] c64-text-glow border-[#A4A0E4] hover:bg-[#8C7ED5] hover:scale-105 cursor-pointer"
                   style={{
                     fontFamily: 'Press Start 2P, monospace',
                   }}
                 >
-                  {isSelected ? '⏳' : level}
+                  {level}
                 </button>
-              );
-            })}
+              ))}
           </div>
         </div>
 
-        {/* Instructions */}
-        {!address && (
-          <div className="mt-6 c64-border bg-[#880000] px-4 py-3 max-w-md">
-            <p className="text-[#AAFFEE] text-[10px] text-center c64-text-glow">
-              {text.connectWallet}
-            </p>
-          </div>
-        )}
+        {/* Instructions removed - no wallet needed */}
       </div>
 
       {/* Rainbow stripe - bottom */}
       <div className="absolute bottom-4 sm:bottom-8 left-0 right-0 c64-rainbow z-10"></div>
-
-      {/* Error display */}
-      {error && (
-        <div className="fixed bottom-4 right-4 c64-border bg-[#880000] px-6 py-4 z-50">
-          <p className="text-[#AAFFEE] text-[10px] c64-text-glow">{error}</p>
-        </div>
-      )}
 
       {/* CRT scanlines */}
       <div className="absolute inset-0 pointer-events-none">

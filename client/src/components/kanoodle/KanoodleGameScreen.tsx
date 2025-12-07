@@ -5,13 +5,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAccount } from '@starknet-react/core';
 import { KanoodleBoard } from './KanoodleBoard';
 import { PieceSpawn } from './PieceSpawn';
 import { TargetBoard } from './TargetBoard';
-import { ConnectWallet } from './ConnectWallet';
 import { SettingsPopup } from '../SettingsPopup';
-import { useKanoodleGame } from '../../hooks/useKanoodleGame';
+import { useLocalKanoodleGame } from '../../hooks/useLocalKanoodleGame';
 import { getKanoodleText } from '../../lib/uiText';
 import { audioManager } from '../../lib/audioManager';
 import { rotateClockwise, transformPiece, predictBoardAfterPlacement } from '../../lib/kanoodle/pieceUtils';
@@ -24,12 +22,11 @@ import {
 
 export function KanoodleGameScreen() {
   const text = getKanoodleText().game;
-  const { address } = useAccount();
   const navigate = useNavigate();
-  const { gameId: gameIdParam } = useParams<{ gameId: string }>();
+  const { levelId: levelIdParam } = useParams<{ levelId: string }>();
 
-  // Convert gameId from URL param to number
-  const gameId = gameIdParam ? parseInt(gameIdParam, 10) : null;
+  // Convert levelId from URL param to number
+  const levelId = levelIdParam ? parseInt(levelIdParam, 10) : null;
 
   // Game state
   const [selectedPiece, setSelectedPiece] = useState<GamePiece | null>(null);
@@ -72,10 +69,8 @@ export function KanoodleGameScreen() {
     placePiece,
     resetGame,
     undoGame,
-    loadLevel,
     getPieceDefinition,
-    refreshGameState,
-  } = useKanoodleGame(gameId || undefined);
+  } = useLocalKanoodleGame(levelId || undefined);
 
   // Start background music when component mounts
   useEffect(() => {
@@ -86,39 +81,21 @@ export function KanoodleGameScreen() {
     };
   }, []);
 
-  // Redirect to home if no gameId
+  // Redirect to home if no levelId
   useEffect(() => {
-    if (!gameId) {
-      console.error('No gameId in URL, redirecting to home');
+    if (!levelId) {
+      console.error('No levelId in URL, redirecting to home');
       navigate('/home');
     }
-  }, [gameId, navigate]);
+  }, [levelId, navigate]);
 
-  // Load game state and level data when gameId is available
+  // Reset completion state when level changes
   useEffect(() => {
-    if (!gameId || !address) return;
-
-    const loadGameData = async () => {
-      console.log('Loading game data for gameId:', gameId);
-
-      // Refresh game state to get level_id
-      await refreshGameState();
-    };
-
-    loadGameData();
-  }, [gameId, address, refreshGameState]);
-
-  // Load level data when game state is loaded
-  useEffect(() => {
-    if (!gameState?.level_id) return;
-
-    const loadLevelData = async () => {
-      console.log('Loading level data for level_id:', gameState.level_id);
-      await loadLevel(gameState.level_id);
-    };
-
-    loadLevelData();
-  }, [gameState?.level_id, loadLevel]);
+    console.log('🔄 Level changed, resetting completion state for level:', levelId);
+    setHasShownCompletion(false);
+    setShowLevelComplete(false);
+    setNextLevelNumber(null);
+  }, [levelId]);
 
   // Load available pieces when level loads
   useEffect(() => {
@@ -214,18 +191,19 @@ export function KanoodleGameScreen() {
           navigate('/victory');
         }, 3000);
       } else {
+        const nextLevel = currentLevelNumber + 1;
         setShowLevelComplete(true);
-        setNextLevelNumber(currentLevelNumber + 1);
+        setNextLevelNumber(nextLevel);
         setHasShownCompletion(true);
 
         setTimeout(() => {
-          console.log('⏭️  Hiding animation and advancing to next level...');
+          console.log('⏭️  Hiding animation and advancing to next level:', nextLevel);
           setShowLevelComplete(false);
-          handleNextLevel();
+          navigate(`/level/${nextLevel}`);
         }, 3000);
       }
     }
-  }, [gameState?.current_solution, gameState?.level_id, currentLevel?.solution, hasShownCompletion]);
+  }, [gameState?.current_solution, gameState?.level_id, currentLevel?.solution, hasShownCompletion, navigate]);
 
   // Handlers
   const handlePieceSelect = (piece: GamePiece) => {
@@ -270,7 +248,7 @@ export function KanoodleGameScreen() {
   };
 
   const handleBoardClick = async (x: number, y: number) => {
-    if (!selectedPiece || !gameId || !address || !currentLevel || !gameState || isLoading) return;
+    if (!selectedPiece || !levelId || !currentLevel || !gameState || isLoading) return;
 
     console.log('🎮 Placing piece:', {
       piece_id: selectedPiece.piece_id,
@@ -351,15 +329,16 @@ export function KanoodleGameScreen() {
             navigate('/victory');
           }, 3000);
         } else {
+          const nextLevel = currentLevelNumber + 1;
           setShowLevelComplete(true);
-          setNextLevelNumber(currentLevelNumber + 1);
+          setNextLevelNumber(nextLevel);
           setHasShownCompletion(true);
 
           // Auto-hide after 3 seconds and go to next level
           setTimeout(() => {
-            console.log('⏭️  Hiding animation and advancing to next level...');
+            console.log('⏭️  Hiding animation and advancing to next level:', nextLevel);
             setShowLevelComplete(false);
-            handleNextLevel();
+            navigate(`/level/${nextLevel}`);
           }, 3000);
         }
       } else {
@@ -439,10 +418,13 @@ export function KanoodleGameScreen() {
     setShowHomeConfirmation(false);
   };
 
-  const handleNextLevel = () => {
-    // Just hide the animation, don't navigate anywhere
-    // The game will automatically load the next level from the contract
-    console.log('📍 Staying on current screen, next level will load automatically');
+  const handleNextLevel = async () => {
+    if (!nextLevelNumber) return;
+
+    console.log('📍 Advancing to level:', nextLevelNumber);
+
+    // Simply navigate to the next level
+    navigate(`/level/${nextLevelNumber}`);
   };
 
   const handleClearBoard = async () => {
@@ -496,17 +478,6 @@ export function KanoodleGameScreen() {
     }
   };
 
-  if (!address) {
-    return (
-      <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
-        <div className="text-center text-[#AAFFEE] c64-text-glow">
-          <p className="text-xl mb-4">CONNECT WALLET</p>
-          <p className="text-sm">TO START PLAYING</p>
-        </div>
-      </div>
-    );
-  }
-
   if (isLoading && !gameState) {
     return (
       <div className="min-h-screen bg-[#6C5EB5] c64-screen flex items-center justify-center">
@@ -528,7 +499,6 @@ export function KanoodleGameScreen() {
 
       {/* Right buttons - top right corner */}
       <div className="absolute top-12 right-12 flex gap-2 sm:gap-3 items-center z-50">
-        <ConnectWallet />
         <button
           onClick={() => {
             audioManager.playMenuNav();

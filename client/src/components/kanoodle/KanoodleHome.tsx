@@ -5,51 +5,27 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@starknet-react/core';
 import { SettingsPopup } from '../SettingsPopup';
-import { ConnectWallet } from './ConnectWallet';
 import { getKanoodleText } from '../../lib/uiText';
 import { audioManager, initAudio } from '../../lib/audioManager';
-import { useKanoodleGame } from '../../hooks/useKanoodleGame';
 import { INITIAL_LEVEL } from '../../lib/kanoodle/config';
 
 export function KanoodleHome() {
   const navigate = useNavigate();
-  const { address } = useAccount();
   const [showSettings, setShowSettings] = useState(false);
-  const [isCreatingGame, setIsCreatingGame] = useState(false);
   const text = getKanoodleText().home;
-  const textLogin = getKanoodleText().login;
-
-  const { startGame, error } = useKanoodleGame();
+  const textSettings = getKanoodleText().settings;
 
   // Initialize audio on mount
   useEffect(() => {
     initAudio();
   }, []);
 
-  const handleStartGame = async () => {
-    if (!address || isCreatingGame) return;
-
-    setIsCreatingGame(true);
+  const handleStartGame = () => {
     audioManager.playButtonClick();
-
-    try {
-      console.log('Creating new game...');
-      const gameId = await startGame(INITIAL_LEVEL);
-
-      if (gameId) {
-        console.log('Game created successfully:', gameId);
-        // Navigate to game screen with gameId in URL
-        navigate(`/game/${gameId}`);
-      } else {
-        console.error('Failed to create game - no gameId returned');
-      }
-    } catch (err) {
-      console.error('Error creating game:', err);
-    } finally {
-      setIsCreatingGame(false);
-    }
+    console.log('Starting game at level:', INITIAL_LEVEL);
+    // Navigate directly to the initial level
+    navigate(`/level/${INITIAL_LEVEL}`);
   };
 
   return (
@@ -62,16 +38,15 @@ export function KanoodleHome() {
 
       {/* Top right buttons */}
       <div className="absolute top-6 sm:top-12 right-6 sm:right-12 z-20 flex gap-2 sm:gap-3 items-center">
-        <ConnectWallet />
         <button
           onClick={() => {
             audioManager.playMenuNav();
             setShowSettings(true);
           }}
           className="c64-button py-2 px-4 text-xs"
-          title={textLogin.settingsButton}
+          title={textSettings.title}
         >
-          {textLogin.settingsButton}
+          ⚙
         </button>
       </div>
 
@@ -170,10 +145,9 @@ export function KanoodleHome() {
           <div className="c64-border bg-[#6C5EB5]/90 p-1.5 sm:p-2">
             <button
               onClick={handleStartGame}
-              disabled={isCreatingGame || !address}
-              className="c64-button w-full py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm bg-[#00CC55] border-[#00B428] disabled:bg-[#777777] disabled:border-[#333333]"
+              className="c64-button w-full py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm bg-[#00CC55] border-[#00B428]"
             >
-              {isCreatingGame ? '⏳ CREATING GAME...' : `▶ ${text.playButton}`}
+              ▶ {text.playButton}
             </button>
           </div>
 
@@ -224,13 +198,6 @@ export function KanoodleHome() {
 
       {/* Settings Popup */}
       {showSettings && <SettingsPopup onClose={() => setShowSettings(false)} />}
-
-      {/* Error display - C64 Style */}
-      {error && (
-        <div className="fixed bottom-4 right-4 c64-border bg-[#880000] px-6 py-4 z-50">
-          <p className="text-[#AAFFEE] text-[10px] c64-text-glow">{error}</p>
-        </div>
-      )}
 
       {/* CRT scanlines */}
       <div className="absolute inset-0 pointer-events-none">

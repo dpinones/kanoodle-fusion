@@ -3,4 +3,4 @@
  * Centralized exports for all game hooks
  */
 
-export { useKanoodleGame } from './useKanoodleGame';
+export { useLocalKanoodleGame } from './useLocalKanoodleGame';

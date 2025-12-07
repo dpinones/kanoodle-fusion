@@ -11,16 +11,9 @@
     "generate:types": "DOJO_ROOT=../contracts compile-abi --output ./src/dojo/compiled-abi.json --generate-types"
   },
   "dependencies": {
-    "@cartridge/connector": "^0.10.7",
-    "@cartridge/controller": "^0.10.7",
-    "@cartridge/presets": "^0.5.2",
-    "@cartridge/ui": "0.7.14-alpha.3",
-    "@starknet-react/chains": "^5.0.3",
-    "@starknet-react/core": "^5.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.5",
-    "starknet": "^8.5.5"
+    "react-router-dom": "^7.9.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
@@ -36,9 +29,6 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9",
-    "vite-plugin-mkcert": "^1.17.9",
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.5.0"
+    "vite": "^7.1.9"
   }
 }
